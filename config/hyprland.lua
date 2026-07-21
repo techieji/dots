@@ -117,7 +117,7 @@ hl.bind(mainMod .. "EQUAL", hl.dsp.layout("colresize +conf"))
 hl.bind(mainMod .. "MINUS", hl.dsp.layout("colresize -conf"))
 hl.bind(mainMod .. "L", hl.dsp.exec_cmd("${pkgs.hyprlock}/bin/hyprlock"))
 hl.bind("switch:on:Lid Switch", hl.dsp.exec_cmd("${pkgs.hyprlock}/bin/hyprlock & sleep 1 && ${pkgs.systemd}/bin/systemctl suspend"))
-hl.bind(mainMod .. "P", hl.dsp.exec_cmd("${./password.sh}"))
+hl.bind(mainMod .. "P", hl.dsp.exec_cmd("${../scripts/password.sh}"))
 
 -- Workspace navigation ---
 
@@ -156,7 +156,7 @@ hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("${pabc}/bin/pabc -1"))
 hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("${pabc}/bin/pabc 1"))
 
 hl.bind("XF86Calculator", hl.dsp.exec_cmd("${pkgs.speedcrunch}/bin/speedcrunch", { float = true, opacity = "0.9" }))
-hl.bind("XF86KbdLightOnOff", hl.dsp.exec_cmd("${pkgs.nushell}/bin/nu ${./toggle-keyboard.nu}"))
+hl.bind("XF86KbdLightOnOff", hl.dsp.exec_cmd("${pkgs.nushell}/bin/nu ${../scripts/toggle-keyboard.nu}"))
 hl.bind("Print", hl.dsp.exec_cmd("${pkgs.grimblast}/bin/grimblast copy area"))
 
 -- Gestures ---------------

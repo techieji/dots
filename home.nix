@@ -44,7 +44,7 @@
       vim-devicons
       tagbar
     ];
-    extraConfig = builtins.readFile ./vimrc;
+    extraConfig = builtins.readFile ./config/vimrc;
   };
 
   programs.nushell = {
@@ -136,7 +136,7 @@
   wayland.windowManager.hyprland = {
     enable = true;
     configType = "lua";
-    extraConfig = import ./hyprland.lua {
+    extraConfig = import ./config/hyprland.lua {
       inherit pkgs;
       pabc = inputs.pabc.packages.${system}.default;
     };
@@ -188,7 +188,7 @@
   stylix.targets.waybar.addCss = false;
   programs.waybar = {
     enable = true;
-    style = lib.mkAfter (builtins.readFile ./waybar-style.css);
+    style = lib.mkAfter (builtins.readFile ./config/waybar-style.css);
     settings.mainBar = {
       reload_style_on_change = true;
       toggle = true;
@@ -196,7 +196,7 @@
       position = "left";
       margin-top = 0; margin-bottom = 0; margin-left = 0; margin-right = 0;
       spacing = 0;
-      include = [ ./waybar-modules.json ];
+      include = [ ./config/waybar-modules.json ];
       modules-left = [ "clock" "battery#draw" ];
       modules-center = [ "hyprland/workspaces" ];
       modules-right = [ "pulseaudio#microphone" "group/audio" "group/brightness" "battery" ];
