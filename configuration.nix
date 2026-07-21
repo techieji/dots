@@ -171,8 +171,6 @@ in
   };
   ### End hyprland stuff
 
-  programs.starship.enable = true;
-
   services.onedrive.enable = true;
   
   programs.weylus = {       # This is only to open the firewall and set perms. TODO: rewrite this manually!
@@ -195,19 +193,14 @@ in
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
-  # List packages installed in system profile. To search, run:
-  # $ nix search wget
   environment.systemPackages = with pkgs; [
-    python3
-    vim
-    # appimage-run brightnessctl
+    python3 vim
     gst_all_1.gstreamer gst_all_1.gst-plugins-base gst_all_1.gst-plugins-good     # gstreamer (for Weylus) TODO decide whether this is necessary
   ];
   environment.variables.GST_PLUGIN_SYSTEM_PATH_1_0 = "/run/current-system/sw/lib/gstreamer-1.0/";
 
-  environment.shells = [
-    pkgs.nushell
-  ];
+  environment.shells = [ pkgs.nushell ];
+  programs.starship.enable = true;           # TODO remove (starship seems to be using this path instead of the home-manager one)
 
   programs.nh = {
     enable = true;

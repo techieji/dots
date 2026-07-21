@@ -1,4 +1,4 @@
-{ pkgs, system, inputs, ... }: ''
+{ pkgs, pabc, ... }: ''
 ----- HYPRLAND CONFIG ------------
 
 -- Monitors ----------------
@@ -115,9 +115,9 @@ hl.bind(mainMod .. "SHIFT + down", hl.dsp.layout("expel"))
 hl.bind(mainMod .. "SHIFT + up", hl.dsp.layout("consume"))
 hl.bind(mainMod .. "EQUAL", hl.dsp.layout("colresize +conf"))
 hl.bind(mainMod .. "MINUS", hl.dsp.layout("colresize -conf"))
-hl.bind(mainMod .. "L", hl.dsp.exec_cmd("hyprlock"))
-hl.bind("switch:on:Lid Switch", hl.dsp.exec_cmd("hyprlock & sleep 1 && systemctl suspent"))
-hl.bind(mainMod .. "P", hl.dsp.exec_cmd("~/.config/hypr/password.sh"))
+hl.bind(mainMod .. "L", hl.dsp.exec_cmd("${pkgs.hyprlock}/bin/hyprlock"))
+hl.bind("switch:on:Lid Switch", hl.dsp.exec_cmd("${pkgs.hyprlock}/bin/hyprlock & sleep 1 && ${pkgs.systemd}/bin/systemctl suspend"))
+hl.bind(mainMod .. "P", hl.dsp.exec_cmd("${./password.sh}"))
 
 -- Workspace navigation ---
 
@@ -146,17 +146,18 @@ hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
 
 -- Hotkeys ----------------
 
-hl.bind("XF86AudioMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"))
-hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"))
-hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+"))
-hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"))
+local wpctl = "${pkgs.wireplumber}/bin/wpctl";
+hl.bind("XF86AudioMute", hl.dsp.exec_cmd(wpctl .. " set-mute @DEFAULT_AUDIO_SINK@ toggle"))
+hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd(wpctl .. " set-volume @DEFAULT_AUDIO_SINK@ 5%-"))
+hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd(wpctl .. " set-volume @DEFAULT_AUDIO_SINK@ 5%+"))
+hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd(wpctl .. " set-mute @DEFAULT_AUDIO_SOURCE@ toggle"))
 
-hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("${inputs.pabc.packages.${system}.default}/bin/pabc -1"))
-hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("${inputs.pabc.packages.${system}.default}/bin/pabc 1"))
+hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("${pabc}/bin/pabc -1"))
+hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("${pabc}/bin/pabc 1"))
 
-hl.bind("XF86Calculator", hl.dsp.exec_cmd("speedcrunch", { float = true, opacity = "0.9" }))
-hl.bind("XF86KbdLightOnOff", hl.dsp.exec_cmd("/home/prajasekar/.config/hypr/toggle-kbd.sh"))
-hl.bind("Print", hl.dsp.exec_cmd("grimblast copy area"))
+hl.bind("XF86Calculator", hl.dsp.exec_cmd("${pkgs.speedcrunch}/bin/speedcrunch", { float = true, opacity = "0.9" }))
+hl.bind("XF86KbdLightOnOff", hl.dsp.exec_cmd("${pkgs.nushell}/bin/nu ${./toggle-keyboard.nu}"))
+hl.bind("Print", hl.dsp.exec_cmd("${pkgs.grimblast}/bin/grimblast copy area"))
 
 -- Gestures ---------------
 

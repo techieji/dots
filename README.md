@@ -31,12 +31,12 @@ Implementation notes:
 Currently remaining impurities:
  - Font: Iosevka (with custom options)
  - Cursor: TheDot (maybe convert to hyprcursor?)
- - Hyprland shell scripts
 
 Future improvements:
  - Get rid of Flatpak! (is only used for [Weylus Community Edition](https://github.com/electronstudio/WeylusCommunityEdition))
    - Related: get rid of the weylus in `configuration.nix` if it is not being used; manually open the firewall and set user groups.
  - Determine whether gstreamer is needed for Weylus.
+ - More elegant way of stating requirements for Hyprland?
 
 Adaptation notes:
  - My name and email is used in configuring git (`home.nix`).

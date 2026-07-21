@@ -27,7 +27,7 @@
   programs.git = {
     enable = true;
     settings = {
-      user = { name = "Pradhyum Rajasekar"; email = "drpradhyum2016@outlook.com"; };
+      user = { name = "Pradhyum R"; email = "drpradhyum2016@outlook.com"; };
       init.defaultBranch = "main";
     };
   };
@@ -136,7 +136,10 @@
   wayland.windowManager.hyprland = {
     enable = true;
     configType = "lua";
-    extraConfig = import ./hyprland.lua { inherit pkgs inputs system; };
+    extraConfig = import ./hyprland.lua {
+      inherit pkgs;
+      pabc = inputs.pabc.packages.${system}.default;
+    };
   };
  
   stylix.targets.hyprlock.enable = false;
