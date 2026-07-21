@@ -146,6 +146,7 @@ in
     extraConfig = import ./config/hyprland.lua {
       inherit pkgs;
       pabc = inputs.pabc.packages.${system}.default;
+      helium = inputs.helium.defaultPackage.${system};
     };
   };
  

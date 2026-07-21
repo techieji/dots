@@ -1,4 +1,4 @@
-{ pkgs, pabc, ... }: ''
+{ pkgs, pabc, helium, ... }: ''
 ----- HYPRLAND CONFIG ------------
 
 -- Monitors ----------------
@@ -29,7 +29,7 @@ hl.monitor({
 
 local terminal = "${pkgs.kitty}/bin/kitty"
 local menu = "${pkgs.vicinae}/bin/vicinae open"
-local browser = "${pkgs.appimage-run}/bin/appimage-run ~/AppImages/helium.appimage"
+local browser = "${helium}/bin/helium"
 local reader = "${pkgs.zathura}/bin/zathura"
 
 -- Env vars ----------------
