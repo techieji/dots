@@ -189,6 +189,7 @@ in
 
   programs.vicinae = {
     enable = true;
+    systemd.enable = true;
   };
 
   stylix.targets.waybar.addCss = false;
@@ -207,6 +208,7 @@ in
       modules-center = [ "hyprland/workspaces" ];
       modules-right = [ "pulseaudio#microphone" "group/audio" "group/brightness" "battery" ];
     };
+    systemd.enable = true;
   };
  
   home.stateVersion = "26.05";
