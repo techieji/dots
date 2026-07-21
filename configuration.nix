@@ -175,7 +175,7 @@ in
   };
 
   stylix.enable = true;
-  stylix.base16Scheme = "${pkgs.base16-schemes}/share/themes/gruvbox-dark-hard.yaml";
+  stylix.base16Scheme = "${pkgs.base16-schemes}/share/themes/danqing.yaml";
   stylix.fonts = { monospace.name = "Iosevka Radon"; };     # This is technically only set in prajasekar
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
