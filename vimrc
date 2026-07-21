@@ -1,0 +1,98 @@
+" This needs to be loaded by vim.nix
+
+set nocompatible
+set encoding=UTF-8
+filetype plugin indent on
+syntax on
+set termguicolors
+colorscheme default
+set background=dark
+
+let g:UltiSnipsExpandTrigger="<tab>"
+let g:UltiSnipsJumpForwardTrigger="<tab>"
+let g:UltiSnipsJumpBackwardTrigger="<s-tab>"
+let g:UltiSnipsEditSplit="context"
+
+let g:vimtex_view_method = 'zathura_simple'
+let g:vimtex_compiler_latexmk = {
+    \ 'aux_dir' : '', 
+    \ 'out_dir' : '',
+    \ 'callback' : 1,
+    \ 'continuous' : 1,
+    \ 'executable' : 'latexmk',
+    \ 'hooks' : [], 
+    \ 'options' : [ 
+    \   '-shell-escape',
+    \   '-verbose',
+    \   '-file-line-error',
+    \   '-synctex=1',
+    \   '-interaction=nonstopmode',
+    \ ],
+    \}
+let g:vimtex_callback_progpath = '/etc/profiles/per-user/prajasekar/bin/vim'
+let g:vimtex_quickfix_open_on_warning = 0
+
+set so=25
+set nowrap
+
+set backspace=indent,eol,start
+nmap <localleader>v <plug>(vimtex-view)
+
+set history=500
+
+set wildmenu
+set expandtab
+set smarttab
+set shiftwidth=0
+set tabstop=4
+set undodir=/home/prajasekar/.vim/undo
+set undofile
+
+set number
+nnoremap <Up>   gk
+nnoremap tt     :TagbarToggle<CR>
+nnoremap nt     :NERDTreeToggle<CR>
+nnoremap <Down> gj
+xnoremap <Up>   gk
+xnoremap <Down> gj
+inoremap <Up>   <C-O>gk
+inoremap <Down> <C-O>gj
+
+if empty(v:servername) && exists('*remote_startserver')
+call remote_startserver('VIM')
+endif
+
+"highlight VertSplit cterm=NONE
+set fillchars+=vert:\ 
+
+let g:NERDTreeDirArrowExpandable=" "
+let g:NERDTreeDirArrowCollapsible=" "
+
+" air-line
+let g:airline_powerline_fonts = 1
+
+if !exists('g:airline_symbols')
+let g:airline_symbols = {}
+endif
+
+" airline symbols
+" let g:airline_left_sep = ''
+let g:airline_left_sep = ''
+let g:airline_right_sep = ''
+let g:airline_left_alt_sep = ''
+let g:airline_right_alt_sep = ''
+let g:airline_symbols.branch = ''
+let g:airline_symbols.readonly = ''
+let g:airline_symbols.linenr = ''
+let g:airline_symbols.colnr = ' ℅:'
+let g:airline_symbols.linenr = ' :'
+let g:airline_symbols.notexists = '∄'
+
+let g:WebDevIconsUnicodeDecorateFolderNodes = 1
+"let g:WebDevIconsUnicodeDecorateFolderNodeDefaultSymbol = ''
+
+let g:WebDevIconsUnicodeDecorateFileNodesExtensionSymbols = {}
+let g:WebDevIconsUnicodeDecorateFileNodesExtensionSymbols['nerdtree'] = ''
+let g:DevIconsEnableFoldersOpenClose = 1
+
+autocmd Filetype verilog setlocal tabstop=2

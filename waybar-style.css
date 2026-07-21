@@ -1,0 +1,62 @@
+@import "./colors.css";
+
+* {
+  font-family: "Iosevka Xenon";
+  font-size: 16px;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+#cpu:hover,
+#network:hover,
+#bluetooth:hover,
+#pulseaudio:hover,
+#pulseaudio.microphone:hover,
+#pulseaudio.sink-muted:hover {
+  opacity: 0.5;
+}
+
+#custom-cachy,
+#cpu,
+#clock,
+#tray,
+#privacy,
+#network,
+#bluetooth,
+#pulseaudio,
+#pulseaudio.microphone,
+#backlight,
+#battery {
+  padding: 6px 0;
+}
+
+#workspaces {
+    padding-right: 3px
+}
+
+#workspaces button {
+  padding: 0;
+}
+
+#privacy {
+  margin: 4px;
+}
+
+tooltip * {
+  margin: 2px;
+}
+
+#pulseaudio-slider,
+#backlight-slider {
+  min-height: 80px;
+}
+
+#pulseaudio-slider slider,
+#backlight-slider slider {
+  background: transparent;
+}
+
+#pulseaudio-slider trough,
+#backlight-slider trough {
+  min-width: 8px;
+}
