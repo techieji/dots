@@ -137,7 +137,7 @@ in
 
   services.upower.enable = true;
 
-  services.flatpak.enable = true;
+  services.flatpak.enable = true;     # TODO make this declarative
 
   ### Hyprland stuff
   programs.hyprland = {
@@ -158,17 +158,6 @@ in
       ExecStop = "${pkgs.hyprland}/bin/hyprctl output remove weylus";
     };
   };
-
-  systemd.user.services.cursor = {
-    enable = true;
-    after = [ "graphical-session.target" ];
-    wantedBy = [ "default.target" ];
-    description = "Set cursor";
-    serviceConfig = {
-      Type = "oneshot";
-      ExecStart = "${pkgs.hyprland}/bin/hyprctl setcursor ${cursorinfo.name} ${cursorinfo.size}";
-    };
-  };
   ### End hyprland stuff
 
   services.onedrive.enable = true;
@@ -187,9 +176,7 @@ in
 
   stylix.enable = true;
   stylix.base16Scheme = "${pkgs.base16-schemes}/share/themes/gruvbox-dark-hard.yaml";
-  stylix.fonts = {
-    monospace.name = "Iosevka Xenon";
-  };
+  stylix.fonts = { monospace.name = "Iosevka Radon"; };     # This is technically only set in prajasekar
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 

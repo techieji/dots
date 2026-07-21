@@ -34,7 +34,7 @@ local reader = "${pkgs.zathura}/bin/zathura"
 
 -- Env vars ----------------
 
-hl.env("XCURSOR_SIZE", "24")
+hl.env("HYPRCURSOR_THEME", "TheDot")
 hl.env("HYPRCURSOR_SIZE", "24")
 
 -- All config -------------

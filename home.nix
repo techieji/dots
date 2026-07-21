@@ -1,4 +1,7 @@
 { pkgs, lib, system, inputs, ... }: 
+let
+  cursorInfo = { name = "TheDot"; size = "24"; path = ./resources/TheDot.tar; };
+in
 {
   home.username = "prajasekar";
   home.homeDirectory = "/home/prajasekar";
@@ -9,7 +12,11 @@
     speedcrunch
     libreoffice-qt
     pass
+    ( iosevka.override { set = "Radon"; privateBuildPlan = builtins.readFile ./config/iosevka-radon.toml; } )
   ];
+
+  home.file.".local/share/icons/TheDot".source =
+    pkgs.runCommand "hyprcursor-TheDot" {} "mkdir -p $out; tar xf ${cursorInfo.path} -C $out --strip-components=1";
 
   programs.zathura.enable = true;
 
@@ -149,8 +156,7 @@
       general = { no_fade_in = false; disable_loading_bar = true; };
       background = { 
         monitor = "";
-        # path = wallpaper;      # TODO
-        path = "screenshot";
+        path = builtins.toString ./resources/background.png;
         blur_passes = 3;
         contrast = 0.8916;
         brightness = 0.8172;
@@ -164,7 +170,7 @@
         outer_color = "rgba(0,0,0,0)"; inner_color = "rgba(0,0,0,0.1)";
         font_color = "rgb(200,200,200)";
         fade_on_empty = true;
-        font_family = "FiraCode Nerd Font Mono";      # TODO
+        font_family = "Iosevka Radon";
         hide_input = false;
         position = "100, -300"; halign = "left"; valign = "top";
       } ];
@@ -173,7 +179,7 @@
         text = ''cmd[update:1000] echo "$(date +"%-l:%M%p")"'';
         color = "rgba(255, 255, 255, 1)";
         font_size = 120;
-        font_family = "FiraCode Nerd Font Mono";       # TODO
+        font_family = "Iosevka Radon";
         position = "100, -100"; halign = "left"; valign = "top";
       } ];
     };

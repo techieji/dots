@@ -1,0 +1,91 @@
+[buildPlans.IosevkaRadon]
+family = "Iosevka Radon"
+spacing = "normal"
+serifs = "sans"
+noCvSs = true
+exportGlyphNames = true
+
+[buildPlans.IosevkaRadon.variants.design]
+one = "no-base-top-cut"
+two = "straight-neck-serifless"
+three = "flat-top-serifless"
+five = "upright-flat-hook-serifless"
+six = "closed-contour"
+nine = "closed-contour"
+zero = "tall-slashed-cutout"
+capital-g = "toothless-rounded-serifless-hooked"
+capital-i = "serifless"
+capital-j = "descending-flat-hook-serifless"
+capital-q = "vertical-crossing"
+a = "single-storey-earless-rounded-serifless"
+b = "toothless-rounded-serifless"
+d = "toothless-rounded-serifless"
+f = "extended"
+g = "single-storey-earless-rounded"
+i = "flat-tailed"
+j = "flat-hook-serifless"
+l = "semi-tailed"
+m = "flat-top-serifless"
+n = "earless-rounded-straight-serifless"
+p = "earless-rounded-serifless"
+q = "earless-rounded-straight-serifless"
+r = "earless-rounded-serifless"
+t = "flat-hook"
+u = "toothless-rounded-serifless"
+lower-delta = "flat-top"
+lower-eta = "earless-rounded-serifless"
+lower-theta = "capsule"
+lower-iota = "semi-tailed"
+lower-lambda = "tailed-turn"
+lower-mu = "toothless-rounded-serifless"
+lower-xi = "rounded"
+lower-tau = "semi-tailed"
+lower-psi = "flat-top-serifless"
+partial-derivative = "straight-bar"
+tittle = "square"
+diacritic-dot = "square"
+punctuation-dot = "square"
+braille-dot = "square"
+ellipsis-density = "dense"
+asterisk = "turn-hex-low"
+underscore = "low"
+caret = "low"
+paren = "flat-arc"
+brace = "straight"
+guillemet = "straight"
+number-sign = "upright-tall"
+ampersand = "upper-open"
+at = "fourfold-tall"
+dollar = "interrupted"
+percent = "dots"
+question = "corner-flat-hooked"
+pilcrow = "low"
+micro-sign = "toothless-rounded-serifless"
+decorative-angle-brackets = "tall"
+lig-equal-chain = "without-notch"
+lig-hyphen-chain = "without-notch"
+
+  [buildPlans.IosevkaRadon.ligations]
+  inherits = "dlig"
+
+[buildPlans.IosevkaRadon.weights.Regular]
+shape = 400
+menu = 400
+css = 400
+
+[buildPlans.IosevkaRadon.weights.Bold]
+shape = 700
+menu = 700
+css = 700
+
+[buildPlans.IosevkaRadon.slopes.Upright]
+angle = 0
+shape = "upright"
+menu = "upright"
+css = "normal"
+
+[buildPlans.IosevkaRadon.slopes.Italic]
+angle = 9.4
+shape = "italic"
+menu = "italic"
+css = "italic"

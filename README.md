@@ -7,7 +7,8 @@ my system (it has my name and email in places).
 Features:
  - Visuals: [hyprland](https://hypr.land/) with [waybar](https://github.com/Alexays/Waybar) (taskbar) and
    [awww](https://codeberg.org/LGFae/awww) (wallpaper). [hyprlock](https://wiki.hypr.land/Hypr-Ecosystem/hyprlock/)
-   for the lockscreen.
+   for the lockscreen, [TheDot](https://www.gnome-look.org/p/1244392) for the cursor (converted to [hyprcursor](https://wiki.hypr.land/Hypr-Ecosystem/hyprcursor/)).
+   A custom [Iosevka](https://typeof.net/Iosevka/) font.
  - Terminal: [nushell](https://www.nushell.sh/) with [carapace](https://carapace.sh/) for completions,
    [starship](https://starship.rs/) for the prompt, [zoxide](https://github.com/ajeetdsouza/zoxide).
    [vim](https://www.vim.org/) with [ctags](https://en.wikipedia.org/wiki/ctags) support, as well as
@@ -27,10 +28,6 @@ Implementation notes:
  - `hyprland.lua` is actually a nix function that returns Lua code. This is done to inject the executable
    paths.
  - Vim plugins are maintained in `home.nix`. Everything else is in `vimrc`.
-
-Currently remaining impurities:
- - Font: Iosevka (with custom options)
- - Cursor: TheDot (maybe convert to hyprcursor?)
 
 Future improvements:
  - Get rid of Flatpak! (is only used for [Weylus Community Edition](https://github.com/electronstudio/WeylusCommunityEdition))
