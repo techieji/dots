@@ -6,6 +6,7 @@
     nixpkgs = { url = "github:nixOS/nixpkgs/nixos-unstable"; };
     home-manager = { url = "github:nix-community/home-manager"; inputs.nixpkgs.follows = "nixpkgs"; };
     stylix = { url = "github:nix-community/stylix"; inputs.nixpkgs.follows = "nixpkgs"; };
+    impermanence = { url = "github:nix-community/impermanence"; inputs.nixpkgs.follows = "nixpkgs"; };
 
     # Self-maintained tools
     pabc = { url = "github:techieji/pabc"; inputs.nixpkgs.follows = "nixpkgs"; };

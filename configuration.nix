@@ -2,15 +2,8 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, inputs, ... }:
-let
-  cursorinfo = { name = "Dot-Transparent"; size = "24"; };
-in
-{
-  imports =
-    [ # Include the results of the hardware scan.
-      ./hardware-configuration.nix
-    ];
+{ config, pkgs, lib, inputs, ... }: {
+  imports = [ ./hardware-configuration.nix inputs.impermanence.nixosModules.impermanence ];
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
@@ -22,55 +15,24 @@ in
   # Configure network proxy if necessary
   # networking.proxy.default = "http://user:password@proxy:port/";
   # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
+ 
+  networking.networkmanager.enable = true;        # Enable networking
+  programs.nm-applet.enable = true;         # Enable network manager applet
 
-  # Enable networking
-  networking.networkmanager.enable = true;
-
-  # Enable network manager applet
-  programs.nm-applet.enable = true;
-
-  # Set your time zone.
+  # Internationalisation properties.
   time.timeZone = "America/New_York";
-
-  # Select internationalisation properties.
-  i18n.defaultLocale = "en_US.UTF-8";
-
-  i18n.extraLocaleSettings = {
-    LC_ADDRESS = "en_US.UTF-8";
-    LC_IDENTIFICATION = "en_US.UTF-8";
-    LC_MEASUREMENT = "en_US.UTF-8";
-    LC_MONETARY = "en_US.UTF-8";
-    LC_NAME = "en_US.UTF-8";
-    LC_NUMERIC = "en_US.UTF-8";
-    LC_PAPER = "en_US.UTF-8";
-    LC_TELEPHONE = "en_US.UTF-8";
-    LC_TIME = "en_US.UTF-8";
+  i18n.extraLocaleSettings = let US = "en_US.UTF-8"; in {
+    defaultLocale = US; LC_ADDRESS = US; LC_IDENTIFICATION = US;
+    LC_MEASUREMENT = US; LC_MONETARY = US; LC_NAME = US; LC_NUMERIC = US;
+    LC_PAPER = US; LC_TELEPHONE = US; LC_TIME = US;
   };
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
-  # Enable the X11 windowing system.
-  # services.xserver.enable = true;
-
-  # Enable the LXQT Desktop Environment.
-  # services.xserver.displayManager.lightdm.enable = true;
-  # services.xserver.desktopManager.lxqt.enable = true;
-
-  # Configure keymap in X11
-  services.xserver.xkb = {
-    layout = "us";
-    variant = "";
-  };
-
   # Enable CUPS to print documents.
   services.printing.enable = true;
-
-  services.avahi = {
-    enable = true;
-    nssmdns4 = true;
-    openFirewall = true;
-  };
+  services.avahi = { enable = true; nssmdns4 = true; openFirewall = true; };
 
   # Enable sound with pipewire.
   services.pulseaudio.enable = false;
@@ -93,35 +55,65 @@ in
     enable = true;
     powerOnBoot = true;
     settings = {
-      General = {
-        Experimental = true;
-      };
-      Policy = {
-        AutoEnable = true;
-      };
+      General = { Experimental = true; };
+      Policy = { AutoEnable = true; };
     };
   };
   services.blueman.enable = true;
 
-  services.fprintd.enable = true;
+  services.fprintd.enable = true;      # Fingerprint
+
+  fileSystems."/persist" = {
+    device = "/dev/disk/by-uuid/3d3f9482-968e-46a2-b464-637b97a82845";
+    fsType = "btrfs";
+    options = [ "subvol=@persist" "compress=zstd" ];
+    neededForBoot = true;
+  };
+
+  fileSystems."/nix" = {
+    device = "/dev/disk/by-uuid/3d3f9482-968e-46a2-b464-637b97a82845";
+    fsType = "btrfs";
+    options = [ "subvol=@nix" "compress=zstd" ];
+    neededForBoot = true;
+  };
+
+  fileSystems."/" = lib.mkForce {
+    device = "none";
+    fsType = "tmpfs";
+    options = [ "defaults" "size=16G" "mode=755" ];
+  };
+
+  fileSystems."/home/prajasekar" = {       # I'm the only user after all!
+    device = "none";
+    fsType = "tmpfs";
+    options = [ "defaults" "size=16G" "mode=755" ];
+    neededForBoot = true;      # Why is this true?
+  };
+
+  environment.persistence."/persist" = {
+    hideMounts = true;
+    directories = [
+      "/var/log"
+      "/var/lib/nixos"
+      "/var/lib/systemd/coredump"
+      "/etc/NetworkManager/system-connections"
+      "/var/lib/NetworkManager"
+      "/var/lib/fprint"
+    ];
+    files = [
+      "/etc/machine-id"
+    ];
+  };
 
   fileSystems."/mnt/data-part" = {
-    device = "/dev/nvme0n1p5";            # TODO switch to by-uuid
+    device = "/dev/disk/by-uuid/3d3f9482-968e-46a2-b464-637b97a82845";
     fsType = "btrfs";
   };
 
-  fileSystems."/home/prajasekar" = {
-    depends = [ "/mnt/data-part" ];
-    device = "/mnt/data-part/home/prajasekar";
-    fsType = "none";
-    options = [ "bind" ];
-  };
-
-  # Enable touchpad support (enabled default in most desktopManager).
-  # services.xserver.libinput.enable = true;
-
-  # Define a user account. Don't forget to set a password with ‘passwd’.
+  users.mutableUsers = false;
+  users.users.root.hashedPassword = "!";
   users.users.prajasekar = {
+    hashedPasswordFile = "/persist/secrets/prajasekar-password-hash";
     isNormalUser = true;
     description = "Pradhyum Rajasekar";
     extraGroups = [ "networkmanager" "wheel" "ydotool" ];
@@ -133,17 +125,23 @@ in
   };
 
   programs.gnupg.agent.enable = true;
-  programs.ydotool.enable = true;        # For pass
+  programs.ydotool.enable = true;        # For password menu
 
   services.upower.enable = true;
 
   services.flatpak.enable = true;     # TODO make this declarative
 
-  ### Hyprland stuff
-  programs.hyprland = {
+  programs.hyprland = { enable = true; withUWSM = true; xwayland.enable = true; };
+
+  systemd.user.services.set-wallpaper = {
     enable = true;
-    withUWSM = true;
-    xwayland.enable = true;
+    after = [ "graphical-session.service" ];
+    wantedBy = [ "default.target" ];
+    description = "Set wallpaper using awww";
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.awww}/bin/awww img ${./resources/background.png}";
+    };
   };
 
   systemd.user.services.weylus = {
@@ -158,7 +156,6 @@ in
       ExecStop = "${pkgs.hyprland}/bin/hyprctl output remove weylus";
     };
   };
-  ### End hyprland stuff
 
   services.onedrive.enable = true;
   
@@ -176,18 +173,14 @@ in
 
   stylix.enable = true;
   stylix.base16Scheme = "${pkgs.base16-schemes}/share/themes/danqing.yaml";
-  stylix.fonts = { monospace.name = "Iosevka Radon"; };     # This is technically only set in prajasekar
+  stylix.fonts = { monospace.name = "Iosevka Radon"; };     # This font is technically only set in prajasekar
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
-  environment.systemPackages = with pkgs; [
-    python3 vim
-    gst_all_1.gstreamer gst_all_1.gst-plugins-base gst_all_1.gst-plugins-good     # gstreamer (for Weylus) TODO decide whether this is necessary
-  ];
-  environment.variables.GST_PLUGIN_SYSTEM_PATH_1_0 = "/run/current-system/sw/lib/gstreamer-1.0/";
+  environment.systemPackages = with pkgs; [ python3 vim ];
 
   environment.shells = [ pkgs.nushell ];
-  programs.starship.enable = true;           # TODO remove (starship seems to be using this path instead of the home-manager one)
+  programs.starship.enable = true;           # TODO remove (starship seems to be using the global path instead of the home-manager one)
 
   programs.nh = {
     enable = true;

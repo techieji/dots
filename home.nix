@@ -1,8 +1,16 @@
 { pkgs, lib, system, inputs, ... }: 
 let
   cursorInfo = { name = "TheDot"; size = "24"; path = ./resources/TheDot.tar; };
-in
-{
+in {
+  imports = [ "${inputs.impermanence}/home-manager.nix" ];
+
+  home.persistence."/persist/" = {
+    directories = [
+      ".gnupg" ".password-store" ".ssh" "Documents"
+      ".local/share/zoxide" ".config/net.imput.helium"
+    ];
+  };
+ 
   home.username = "prajasekar";
   home.homeDirectory = "/home/prajasekar";
   home.packages = with pkgs; [
@@ -73,30 +81,14 @@ in
       add_newline = false;
       format = "$directory$character";
       right_format = "$status$cmd_duration$nix_shell";
-      character = {
-        success_symbol = "[>](bold green)";
-        error_symbol = "[>](bold red)";
-      };
-      cmd_duration = {
-        format = " took [$duration]($style)";
-        min_time = 0;
-      };
-      directory = {
-        format = "[$path]($style) ";
-        truncation_length = 2;
-        style = "lightblue";
-      };
-      nix_shell = {
-        format = " [$symbol]($style)";
-        symbol = "\\[*\\]";
-      };
+      character = { success_symbol = "[>](bold green)"; error_symbol = "[>](bold red)"; };
+      cmd_duration = { format = " took [$duration]($style)"; min_time = 0; };
+      directory = { format = "[$path]($style) "; truncation_length = 2; style = "lightblue"; };
+      nix_shell = { format = " [$symbol]($style)"; symbol = "\\[*\\]"; };
       status = {
-        format = " [$symbol$common_meaning$signal_name$maybe_int]($style)";
-        success_style = "bold green";
-        failure_style = "bold red";
-        symbol = "";
-        success_symbol = "OK";
-        disabled = false;
+        format = " [$symbol$common_meaning$signal_name$maybe_int]($style)"; disabled = false;
+        success_style = "bold green"; failure_style = "bold red";
+        symbol = ""; success_symbol = "OK";
       };
     };
   };
@@ -144,6 +136,7 @@ in
     enable = true;
     configType = "lua";
     extraConfig = import ./config/hyprland.lua {
+      # Vars that are passed to generate the final hyprland.lua
       inherit pkgs;
       pabc = inputs.pabc.packages.${system}.default;
       helium = inputs.helium.defaultPackage.${system};
