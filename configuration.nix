@@ -129,41 +129,11 @@
 
   services.upower.enable = true;
 
-  services.flatpak.enable = true;     # TODO make this declarative
-
   programs.hyprland = { enable = true; withUWSM = true; xwayland.enable = true; };
-
-  systemd.user.services.set-wallpaper = {
-    enable = true;
-    after = [ "graphical-session.service" ];
-    wantedBy = [ "default.target" ];
-    description = "Set wallpaper using awww";
-    serviceConfig = {
-      Type = "oneshot";
-      ExecStart = "${pkgs.awww}/bin/awww img ${./resources/background.png}";
-    };
-  };
-
-  systemd.user.services.weylus = {
-    enable = true;
-    after = [ "graphical-session.target" ];
-    description = "weylus (iPad as drawing tablet)";
-    serviceConfig = {
-      Type = "simple";
-      ExecStartPre = "${pkgs.hyprland}/bin/hyprctl output create headless weylus";
-      # TODO move away from flatpak after wayland fixes are upstreamed
-      ExecStart = "${pkgs.flatpak}/bin/flatpak run io.github.electronstudio.WeylusCommunityEdition --no-gui --try-vaapi --auto-start --wayland-support";
-      ExecStop = "${pkgs.hyprland}/bin/hyprctl output remove weylus";
-    };
-  };
 
   services.onedrive.enable = true;
   
-  programs.weylus = {       # This is only to open the firewall and set perms. TODO: rewrite this manually!
-    enable = true;
-    openFirewall = true;
-    users = [ "prajasekar" ];
-  };
+  programs.weylus = { enable = true; openFirewall = true; users = [ "prajasekar" ]; };
 
   xdg.portal = {
     enable = true;

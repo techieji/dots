@@ -1,6 +1,7 @@
 { pkgs, lib, system, inputs, ... }: 
 let
   cursorInfo = { name = "TheDot"; size = "24"; path = ./resources/TheDot.tar; };
+  iosevkaRadon = pkgs.iosevka.override { set = "Radon"; privateBuildPlan = builtins.readFile ./config/iosevka-radon.toml; };
 in {
   imports = [ "${inputs.impermanence}/home-manager.nix" ];
 
@@ -20,7 +21,17 @@ in {
     speedcrunch
     libreoffice-qt
     pass
-    ( iosevka.override { set = "Radon"; privateBuildPlan = builtins.readFile ./config/iosevka-radon.toml; } )
+    ( iosevkaRadon.overrideAttrs (old: {
+      nativeBuildInputs = (old.nativeBuildInputs or []) ++ [ pkgs.nerd-font-patcher ];
+      postInstall = (old.postInstall or "") + ''
+      mkdir -p $out/share/fonts/truetype/nerd-patched
+      for f in $out/share/fonts/truetype/*.ttf; do
+        nerd-font-patcher --complete --no-progressbars \
+          --outputdir $out/share/fonts/truetype/nerd-patched \
+          "$f"
+      done
+      '';
+    }) )
   ];
 
   home.file.".local/share/icons/TheDot".source =
@@ -141,6 +152,18 @@ in {
       pabc = inputs.pabc.packages.${system}.default;
       helium = inputs.helium.defaultPackage.${system};
     };
+    package = null;
+    portalPackage = null;
+  };
+
+  programs.bash = {
+    # Needed for automatically starting hyprland
+    enable = true;
+    profileExtra = ''
+      if uwsm check may-start; then
+          exec uwsm start hyprland.desktop
+      fi
+    '';
   };
  
   stylix.targets.hyprlock.enable = false;
@@ -179,12 +202,16 @@ in {
     };
   };
 
-  services.awww.enable = true;      # Wallpaper
-
-  programs.vicinae = {
+  services.hyprpaper = {
     enable = true;
-    systemd.enable = true;
+    settings = {
+      splash = false;
+      wallpaper = [ { monitor = ""; path = builtins.toString ./resources/background.png; } ];
+    };
   };
+
+  services.dunst.enable = true;       # Notification daemon
+  programs.vicinae = { enable = true; systemd.enable = true; };      # App launcher
 
   stylix.targets.waybar.addCss = false;
   programs.waybar = {
