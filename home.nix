@@ -1,4 +1,4 @@
-{ pkgs, lib, system, inputs, ... }: 
+{ config, pkgs, lib, system, inputs, ... }: 
 let
   cursorInfo = { name = "TheDot"; size = "24"; path = ./resources/TheDot.tar; };
   iosevkaRadon = pkgs.iosevka.override { set = "Radon"; privateBuildPlan = builtins.readFile ./config/iosevka-radon.toml; };
@@ -215,7 +215,7 @@ in {
   stylix.targets.swaync.enable = false;        # TODO enable colors and have the css read these colors
   services.swaync = {
     enable = true;
-    style = ./config/swaync-style.css;
+    style = import ./config/swaync-style.css { c = config.lib.stylix.colors.withHashtag; };
     settings = {
       positionX = "right"; positionY = "top";
       control-center-exclusive-zone = false;
@@ -227,17 +227,7 @@ in {
       transition-time = 150;
       script-fail-notify = true;
       widgets = [ "title" "notifications" "buttons-grid" ];
-      widget-config = {
-        title = { text = "Notifications"; clear-all-button = true; button-text = "Clear"; };
-        buttons-grid = { actions = [    # Replace with paths?
-          { label = ""; command = "kitty nmtui"; tooltip = "Network"; }
-          { label = ""; command = "blueman-manager"; tooltip = "Bluetooth"; }
-          { label = "󰂛"; command = "swaync-client -d"; type = "toggle"; tooltip = "DND"; }
-          { label = ""; command = "hyprlock"; tooltip = "Lock"; }
-          { label = "󰜉"; command = "reboot"; tooltip = "Reboot"; }
-          { label = "⏻"; command = "shutdown now"; tooltip = "Power off"; }
-        ]; };
-      };
+      widget-config = { title = { text = "Notifications"; clear-all-button = true; button-text = "Clear"; }; };
     };
   };
  
@@ -268,6 +258,7 @@ in {
       time = 1;
       block-count = 20;
       y-offset = 0.5; x-offset = 0.5;
+      border-width = 0;
     };
   };
  

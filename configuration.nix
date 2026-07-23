@@ -141,9 +141,14 @@
     config.hyprland.default = [ "hyprland" "gtk" ];
   };
 
-  stylix.enable = true;
-  stylix.base16Scheme = "${pkgs.base16-schemes}/share/themes/danqing.yaml";
-  stylix.fonts = { monospace.name = "Iosevka Radon"; };     # This font is technically only set in prajasekar
+  stylix = {
+    enable = true;
+    opacity.popups = 0.5;
+    #image = ./resources/backgrounds/nightscape.png;      # make modular (see home.nix)
+    #polarity = "dark";
+    base16Scheme = "${pkgs.base16-schemes}/share/themes/danqing.yaml";
+    fonts = { monospace.name = "IosevkaRn Nerd Font"; };     # This font is technically only set in prajasekar
+  };
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
