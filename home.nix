@@ -166,6 +166,24 @@ in {
       fi
     '';
   };
+
+  services.hyprsunset = {
+    enable = true;
+    settings = {
+      profile = [
+        { identity = true; }
+      ];
+    };
+  };
+
+  systemd.user.services.sun = {
+    Unit = {
+      Description = "Automatically update screen color to match the outdoors";
+      Requires = [ "hyprsunset.service" ];
+    };
+    Install.WantedBy = [ "default.target" ];
+    Service.ExecStart = "${./scripts/sun.py}";
+  };
  
   stylix.targets.hyprlock.enable = false;
   programs.hyprlock = {

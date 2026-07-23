@@ -1,3 +1,4 @@
+#! /usr/bin/env nu
 brightnessctl -d *::kbd_backlight g
 | into int
 | ($in - 1) mod 3

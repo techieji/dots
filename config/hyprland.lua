@@ -162,11 +162,11 @@ hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("volumectl -u down"))
 hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("volumectl -u up"))
 hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd("volumectl -m toggle-mute"))
 
-hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("lightctl down"))
-hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("lightctl up"))
+hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("${../scripts/lightctl.nu} -- -5"))
+hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("${../scripts/lightctl.nu} -- +5"))
 
 hl.bind("XF86Calculator", hl.dsp.exec_cmd("${pkgs.speedcrunch}/bin/speedcrunch", { float = true, opacity = "0.9" }))
-hl.bind("XF86KbdLightOnOff", hl.dsp.exec_cmd("${pkgs.nushell}/bin/nu ${../scripts/toggle-keyboard.nu}"))
+hl.bind("XF86KbdLightOnOff", hl.dsp.exec_cmd("${../scripts/toggle-keyboard.nu}"))
 hl.bind("Print", hl.dsp.exec_cmd("${pkgs.grimblast}/bin/grimblast copy area"))
 
 -- Gestures ---------------

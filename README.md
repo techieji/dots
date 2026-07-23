@@ -48,9 +48,10 @@ On this last one, important notes:
    [vicinae](https://www.vicinae.com/) for app launcher.
    [Helium](https://helium.computer/) for browser.
    [swaync](https://github.com/ErikReider/SwayNotificationCenter#configuring) for notification manager, 
-   [avizo](https://github.com/heyjuvi/avizo) for brightness, audio, and mic settings.
+   [avizo](https://github.com/heyjuvi/avizo) for brightness, audio, and mic popups.
  - Misc:
    [weylus](https://github.com/H-M-H/Weylus) for remote tablet support.
+   [hyprsunset](https://wiki.hypr.land/Hypr-Ecosystem/hyprsunset/) combined with a custom script to match outdoor light.
    [onedrive](https://github.com/abraunegg/onedrive) sync capability (command line only).
    [stylix](https://github.com/nix-community/stylix) for theming.
    [nh](https://github.com/nix-community/nh) for building the system.
@@ -62,7 +63,7 @@ On this last one, important notes:
 
 ## Persistence notes
 
-`persistence.toml` contains the directories that each app needs to be persisted. Here is a good way to determine this for userspace apps:
+(TODO) `persistence.toml` contains the directories that each app needs to be persisted. Here is a good way to determine this for userspace apps:
  - `$XDG_CONFIG_HOME` (`~/.config`) should only be written by home-manager.
  - `$XDG_CACHE_HOME` (`~/.cache`) shouldn't be persisted.
  - `$XDG_DATA_HOME` (`~/.local/share`) *should* be persisted.
@@ -70,13 +71,13 @@ On this last one, important notes:
 
 To determine the directories that an app uses, use [this list](https://wiki.archlinux.org/title/XDG_Base_Directory#Support).
 If possible, implement workarounds so that the app adheres to XDG and then persist the path inside XDG (this will make it easier
-to switch to persisting all app config).
+to switch to persisting all app config if need be).
 
 ## Implementation notes
  - `hyprland.lua` is actually a nix function that returns Lua code. This is done to inject the executable
    paths.
  - `swaync.css` is also a nix function. This is because the stylix options are dumb and don't let me inject my own CSS? Actually
-   this seems wrong. THis is fixable.
+   this seems wrong. This is fixable.
  - Vim plugins are maintained in `home.nix`. Everything else is in `config/vimrc`.
 
 Impurities:
