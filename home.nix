@@ -2,6 +2,7 @@
 let
   cursorInfo = { name = "TheDot"; size = "24"; path = ./resources/TheDot.tar; };
   iosevkaRadon = pkgs.iosevka.override { set = "Radon"; privateBuildPlan = builtins.readFile ./config/iosevka-radon.toml; };
+  background = "${./resources/backgrounds/nightscape.png}";
 in {
   imports = [ "${inputs.impermanence}/home-manager.nix" ];
 
@@ -173,7 +174,7 @@ in {
       general = { no_fade_in = false; disable_loading_bar = true; };
       background = { 
         monitor = "";
-        path = builtins.toString ./resources/background.png;
+        path = background;
         blur_passes = 3;
         contrast = 0.8916;
         brightness = 0.8172;
@@ -206,11 +207,40 @@ in {
     enable = true;
     settings = {
       splash = false;
-      wallpaper = [ { monitor = ""; path = builtins.toString ./resources/background.png; } ];
+      wallpaper = [ { monitor = ""; path = background; } ];
     };
   };
 
-  services.dunst.enable = true;       # Notification daemon
+  # Config from: https://github.com/iyiolacak/iyiolacak-swaync-config/
+  stylix.targets.swaync.enable = false;        # TODO enable colors and have the css read these colors
+  services.swaync = {
+    enable = true;
+    style = ./config/swaync-style.css;
+    settings = {
+      positionX = "right"; positionY = "top";
+      control-center-exclusive-zone = false;
+      control-center-width = 400;
+      notification-2fa-action = true; notification-inline-replies = false; notification-window-width = 300;
+      notification-body-image-height = 240; notification-body-image-width = 240;
+      timeout = 8; timeout-low = 4; timeout-critical = 0;
+      fit-to-screen = true; keyboard-shortcuts = true; image-visibility = "when-available";
+      transition-time = 150;
+      script-fail-notify = true;
+      widgets = [ "title" "notifications" "buttons-grid" ];
+      widget-config = {
+        title = { text = "Notifications"; clear-all-button = true; button-text = "Clear"; };
+        buttons-grid = { actions = [    # Replace with paths?
+          { label = ""; command = "kitty nmtui"; tooltip = "Network"; }
+          { label = ""; command = "blueman-manager"; tooltip = "Bluetooth"; }
+          { label = "󰂛"; command = "swaync-client -d"; type = "toggle"; tooltip = "DND"; }
+          { label = ""; command = "hyprlock"; tooltip = "Lock"; }
+          { label = "󰜉"; command = "reboot"; tooltip = "Reboot"; }
+          { label = "⏻"; command = "shutdown now"; tooltip = "Power off"; }
+        ]; };
+      };
+    };
+  };
+ 
   programs.vicinae = { enable = true; systemd.enable = true; };      # App launcher
 
   stylix.targets.waybar.addCss = false;
@@ -227,9 +257,18 @@ in {
       include = [ ./config/waybar-modules.json ];
       modules-left = [ "clock" "battery#draw" ];
       modules-center = [ "hyprland/workspaces" ];
-      modules-right = [ "pulseaudio#microphone" "group/audio" "group/brightness" "battery" ];
+      modules-right = [ "custom/notification" "battery" ];
     };
     systemd.enable = true;
+  };
+
+  services.avizo = {
+    enable = true;
+    settings.default = {
+      time = 1;
+      block-count = 20;
+      y-offset = 0.5; x-offset = 0.5;
+    };
   };
  
   home.stateVersion = "26.05";

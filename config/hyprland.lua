@@ -37,7 +37,12 @@ local reader = "${pkgs.zathura}/bin/zathura"
 hl.env("HYPRCURSOR_THEME", "TheDot")
 hl.env("HYPRCURSOR_SIZE", "24")
 
--- All config -------------
+-- Autostart ---------------
+
+---- To avoid using a login manager
+hl.on("hyprland.start", function() hl.exec_cmd("hyprlock") end)
+
+-- All config --------------
 
 hl.config({
     -- Visual stuff ---------
@@ -61,7 +66,7 @@ hl.config({
         blur = {
             -- Lots of options here: https://wiki.hypr.land/Configuring/Basics/Variables/#blur
             enabled = true,
-            size = 1,
+            size = 6,
             passes = 3,
         },
         shadow = {
@@ -97,6 +102,11 @@ hl.window_rule({ name = "obsidian", match = { class = "obsidian" }, scrolling_wi
 hl.window_rule({ name = "speedcrunch", match = { title = "SpeedCrunch" }, persistent_size = true })
 hl.window_rule({ name = "xdg-desktop-portal", match = { title = "Select what to share" }, float = true })
 
+hl.layer_rule({ name = "swaync-control", match = { namespace = "swaync-control-center" }, blur = true, ignore_alpha = 0.0 })
+hl.layer_rule({ name = "swaync-notification", match = { namespace = "swaync-notification-window" }, animation = "slide right", blur = true, ignore_alpha = 0.0 })
+hl.layer_rule({ name = "avizo", match = { namespace = "avizo" }, blur = true, ignore_alpha = 0.0 })
+hl.layer_rule({ name = "vicinae", match = { namespace = "vicinae" }, blur = true, ignore_alpha = 0.0 })
+
 -- Bindings ---------------
 
 local mainMod = "SUPER +"
@@ -115,9 +125,10 @@ hl.bind(mainMod .. "SHIFT + down", hl.dsp.layout("expel"))
 hl.bind(mainMod .. "SHIFT + up", hl.dsp.layout("consume"))
 hl.bind(mainMod .. "EQUAL", hl.dsp.layout("colresize +conf"))
 hl.bind(mainMod .. "MINUS", hl.dsp.layout("colresize -conf"))
-hl.bind(mainMod .. "L", hl.dsp.exec_cmd("${pkgs.hyprlock}/bin/hyprlock"))
-hl.bind("switch:on:Lid Switch", hl.dsp.exec_cmd("${pkgs.hyprlock}/bin/hyprlock & sleep 1 && ${pkgs.systemd}/bin/systemctl suspend"))
+hl.bind(mainMod .. "L", hl.dsp.exec_cmd("$hyprlock"))
+hl.bind("switch:on:Lid Switch", hl.dsp.exec_cmd("hyprlock & sleep 1 && systemctl suspend"))
 hl.bind(mainMod .. "P", hl.dsp.exec_cmd("${../scripts/password.sh}"))
+hl.bind(mainMod .. "N", hl.dsp.exec_cmd("swaync-client -t -sw"))         -- TODO use pkgs
 
 -- Workspace navigation ---
 
@@ -146,14 +157,13 @@ hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
 
 -- Hotkeys ----------------
 
-local wpctl = "${pkgs.wireplumber}/bin/wpctl";
-hl.bind("XF86AudioMute", hl.dsp.exec_cmd(wpctl .. " set-mute @DEFAULT_AUDIO_SINK@ toggle"))
-hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd(wpctl .. " set-volume @DEFAULT_AUDIO_SINK@ 5%-"))
-hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd(wpctl .. " set-volume @DEFAULT_AUDIO_SINK@ 5%+"))
-hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd(wpctl .. " set-mute @DEFAULT_AUDIO_SOURCE@ toggle"))
+hl.bind("XF86AudioMute", hl.dsp.exec_cmd("volumectl toggle-mute"))
+hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("volumectl -u down"))
+hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("volumectl -u up"))
+hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd("volumectl -m toggle-mute"))
 
-hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("${pabc}/bin/pabc -1"))
-hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("${pabc}/bin/pabc 1"))
+hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("lightctl down"))
+hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("lightctl up"))
 
 hl.bind("XF86Calculator", hl.dsp.exec_cmd("${pkgs.speedcrunch}/bin/speedcrunch", { float = true, opacity = "0.9" }))
 hl.bind("XF86KbdLightOnOff", hl.dsp.exec_cmd("${pkgs.nushell}/bin/nu ${../scripts/toggle-keyboard.nu}"))

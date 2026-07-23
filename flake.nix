@@ -8,9 +8,6 @@
     stylix = { url = "github:nix-community/stylix"; inputs.nixpkgs.follows = "nixpkgs"; };
     impermanence = { url = "github:nix-community/impermanence"; inputs.nixpkgs.follows = "nixpkgs"; };
 
-    # Self-maintained tools
-    pabc = { url = "github:techieji/pabc"; inputs.nixpkgs.follows = "nixpkgs"; };
-
     # Other flakes
     helium = { url = "github:FKouhai/helium2nix/main"; inputs.nixpkgs.follows = "nixpkgs"; };
   };

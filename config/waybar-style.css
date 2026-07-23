@@ -3,58 +3,63 @@
   font-size: 16px;
   border-radius: 0;
   box-shadow: none;
+  min-height: 0;
 }
 
-#cpu:hover,
-#network:hover,
-#bluetooth:hover,
-#pulseaudio:hover,
-#pulseaudio.microphone:hover,
-#pulseaudio.sink-muted:hover {
-  opacity: 0.5;
+window#waybar {
+  background-color: @base00;
+  color: @base05;
 }
 
-#custom-cachy,
-#cpu,
 #clock,
 #tray,
-#privacy,
-#network,
-#bluetooth,
-#pulseaudio,
-#pulseaudio.microphone,
-#backlight,
+#custom-notification {
+  color: @base05;
+  padding: 4px 5px 4px 0;
+}
+
 #battery {
-  padding: 6px 0;
+  padding: 10px 4px;
+  color: @base0B;
+}
+
+#battery.charging {
+  color: @base0A;
+}
+
+#battery.critical:not(.charging) {
+  color: @base08;
+}
+
+#battery.draw {
+  color: @base0C;
+  padding: 6px 6px
 }
 
 #workspaces {
-    padding-right: 3px
+  padding: 6px 4px;
 }
 
 #workspaces button {
-  padding: 0;
+  color: @base04;
+  background-color: transparent;
+  padding: 2px 3px 2px 0;
 }
 
-#privacy {
-  margin: 4px;
+#workspaces button.active {
+  color: @base06;
+}
+
+#workspaces button:hover {
+  background-color: @base02;
+}
+
+tooltip {
+  background-color: @base01;
+  border: 1px solid @base02;
 }
 
 tooltip * {
   margin: 2px;
-}
-
-#pulseaudio-slider,
-#backlight-slider {
-  min-height: 80px;
-}
-
-#pulseaudio-slider slider,
-#backlight-slider slider {
-  background: transparent;
-}
-
-#pulseaudio-slider trough,
-#backlight-slider trough {
-  min-width: 8px;
+  color: @base05;
 }

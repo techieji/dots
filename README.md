@@ -19,7 +19,7 @@ On this last one, important notes:
    
    The main userspace data location that is persisted is `~/Documents`.
 
-Features:
+## Features
  - Visuals: [hyprland](https://hypr.land/) with [waybar](https://github.com/Alexays/Waybar) (taskbar) and
    [awww](https://codeberg.org/LGFae/awww) (wallpaper). [hyprlock](https://wiki.hypr.land/Hypr-Ecosystem/hyprlock/)
    for the lockscreen, [TheDot](https://www.gnome-look.org/p/1244392) for the cursor (converted to [hyprcursor](https://wiki.hypr.land/Hypr-Ecosystem/hyprcursor/)).
@@ -33,13 +33,28 @@ Features:
    as calculator, [pass](https://www.passwordstore.org/) as password manager. [vicinae](https://www.vicinae.com/)
    for launcher. [pabc](https://github.com/techieji/pabc) for brightness control. [Helium](https://helium.computer/) for browser.
  - Misc: [weylus](https://github.com/H-M-H/Weylus) for remote tablet support.
-  [onedrive](https://github.com/abraunegg/onedrive) sync capability (command line only).
+   [onedrive](https://github.com/abraunegg/onedrive) sync capability (command line only).
    [stylix](https://github.com/nix-community/stylix) for theming.
    [nh](https://github.com/nix-community/nh) for building the system.
 
-Usage: `nh os switch .` while in this repository.
+## Usage
+ - `nh os switch .` while in this repository
+ - `nh os test .` for quick changes that don't need to be persisted
+ - `nh os boot .` when doing something with the filesystem this is booting off of.
 
-Implementation notes:
+## Persistence notes
+
+`persistence.toml` contains the directories that each app needs to be persisted. Here is a good way to determine this for userspace apps:
+ - `$XDG_CONFIG_HOME` (`~/.config`) should only be written by home-manager.
+ - `$XDG_CACHE_HOME` (`~/.cache`) shouldn't be persisted.
+ - `$XDG_DATA_HOME` (`~/.local/share`) *should* be persisted.
+ - `$XDG_STATE_HOME` (`~/.local/state`) *should* be persisted.
+
+To determine the directories that an app uses, use [this list](https://wiki.archlinux.org/title/XDG_Base_Directory#Support).
+If possible, implement workarounds so that the app adheres to XDG and then persist the path inside XDG (this will make it easier
+to switch to persisting all app config).
+
+## Implementation notes
  - `hyprland.lua` is actually a nix function that returns Lua code. This is done to inject the executable
    paths.
  - Vim plugins are maintained in `home.nix`. Everything else is in `config/vimrc`.

@@ -298,33 +298,12 @@
         "type": "github"
       }
     },
-    "pabc": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1784586186,
-        "narHash": "sha256-dDJNoBwn67HElxZH2QieTkywYy7LCqgyyx166x/pzkU=",
-        "owner": "techieji",
-        "repo": "pabc",
-        "rev": "1e23052ad8171f38d6b00b261cb33d759cf9b780",
-        "type": "github"
-      },
-      "original": {
-        "owner": "techieji",
-        "repo": "pabc",
-        "type": "github"
-      }
-    },
     "root": {
       "inputs": {
         "helium": "helium",
         "home-manager": "home-manager",
         "impermanence": "impermanence",
         "nixpkgs": "nixpkgs",
-        "pabc": "pabc",
         "stylix": "stylix"
       }
     },
