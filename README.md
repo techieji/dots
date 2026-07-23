@@ -20,19 +20,37 @@ On this last one, important notes:
    The main userspace data location that is persisted is `~/Documents`.
 
 ## Features
- - Visuals: [hyprland](https://hypr.land/) with [waybar](https://github.com/Alexays/Waybar) (taskbar) and
-   [awww](https://codeberg.org/LGFae/awww) (wallpaper). [hyprlock](https://wiki.hypr.land/Hypr-Ecosystem/hyprlock/)
-   for the lockscreen, [TheDot](https://www.gnome-look.org/p/1244392) for the cursor (converted to [hyprcursor](https://wiki.hypr.land/Hypr-Ecosystem/hyprcursor/)).
-   A custom [Iosevka](https://typeof.net/Iosevka/) font patched with [Nerd Fonts](https://github.com/ryanoasis/nerd-fonts#font-patcher).
- - Terminal: [nushell](https://www.nushell.sh/) with [carapace](https://carapace.sh/) for completions,
-   [starship](https://starship.rs/) for the prompt, [zoxide](https://github.com/ajeetdsouza/zoxide).
-   [vim](https://www.vim.org/) with [ctags](https://en.wikipedia.org/wiki/ctags) support, as well as
-   [UltiSnips](https://github.com/SirVer/ultisnips) and [VimTeX](https://github.com/lervag/vimtex).
+ - Visuals:
+   [hyprland](https://hypr.land/) with
+   [waybar](https://github.com/Alexays/Waybar) (taskbar) and
+   [hyprpaper](https://wiki.hypr.land/Hypr-Ecosystem/hyprpaper/).
+   [hyprlock](https://wiki.hypr.land/Hypr-Ecosystem/hyprlock/) for the lockscreen,
+   [TheDot](https://www.gnome-look.org/p/1244392) for the cursor (converted to
+   [hyprcursor](https://wiki.hypr.land/Hypr-Ecosystem/hyprcursor/)). A custom
+   [Iosevka](https://typeof.net/Iosevka/) font patched with
+   [Nerd Fonts](https://github.com/ryanoasis/nerd-fonts#font-patcher).
+ - Terminal:
+   [nushell](https://www.nushell.sh/) with
+   [carapace](https://carapace.sh/) for completions,
+   [starship](https://starship.rs/) for the prompt,
+   [zoxide](https://github.com/ajeetdsouza/zoxide).
+   [vim](https://www.vim.org/) with
+   [ctags](https://en.wikipedia.org/wiki/ctags) support, as well as
+   [UltiSnips](https://github.com/SirVer/ultisnips) and
+   [VimTeX](https://github.com/lervag/vimtex).
    [Kitty](https://sw.kovidgoyal.net/kitty/) as terminal emulator.
- - Desktop tools: [libreoffice](https://www.libreoffice.org/), [speedcrunch](https://heldercorreia.bitbucket.io/speedcrunch/)
-   as calculator, [pass](https://www.passwordstore.org/) as password manager. [vicinae](https://www.vicinae.com/)
-   for launcher. [pabc](https://github.com/techieji/pabc) for brightness control. [Helium](https://helium.computer/) for browser.
- - Misc: [weylus](https://github.com/H-M-H/Weylus) for remote tablet support.
+ - Desktop tools:
+   [libreoffice](https://www.libreoffice.org/),
+   [speedcrunch](https://heldercorreia.bitbucket.io/speedcrunch/)
+   as calculator,
+   [pass](https://www.passwordstore.org/) as password manager, working with
+   [tofi](https://github.com/philj56/tofi) as a frontend.
+   [vicinae](https://www.vicinae.com/) for app launcher.
+   [Helium](https://helium.computer/) for browser.
+   [swaync](https://github.com/ErikReider/SwayNotificationCenter#configuring) for notification manager, 
+   [avizo](https://github.com/heyjuvi/avizo) for brightness, audio, and mic settings.
+ - Misc:
+   [weylus](https://github.com/H-M-H/Weylus) for remote tablet support.
    [onedrive](https://github.com/abraunegg/onedrive) sync capability (command line only).
    [stylix](https://github.com/nix-community/stylix) for theming.
    [nh](https://github.com/nix-community/nh) for building the system.
@@ -57,13 +75,15 @@ to switch to persisting all app config).
 ## Implementation notes
  - `hyprland.lua` is actually a nix function that returns Lua code. This is done to inject the executable
    paths.
+ - `swaync.css` is also a nix function. This is because the stylix options are dumb and don't let me inject my own CSS? Actually
+   this seems wrong. THis is fixable.
  - Vim plugins are maintained in `home.nix`. Everything else is in `config/vimrc`.
 
 Impurities:
  - Networking configurations are persisted instead of being in `configuration.nix`.
 
 Future improvements:
- - More elegant way of stating requirements for Hyprland?
+ - Fix hyprcursor!
 
 Adaptation notes:
  - My name and email is used in configuring git (`home.nix`).
