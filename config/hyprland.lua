@@ -66,8 +66,8 @@ hl.config({
         blur = {
             -- Lots of options here: https://wiki.hypr.land/Configuring/Basics/Variables/#blur
             enabled = true,
-            size = 6,
-            passes = 3,
+            size = 2,
+            passes = 2,
         },
         shadow = {
             enabled = false

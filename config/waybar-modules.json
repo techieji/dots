@@ -1,7 +1,7 @@
 {
   "hyprland/workspaces": {
     "on-click": "hyprctl dispatch 'hl.dsp.focus({ workspace={address} })'",
-    "justify": "center",
+    "justify": "right",
     "format": "{icon}",
     "format-icons": {
       "default": "󰄰",
@@ -17,7 +17,7 @@
   },
   "clock": {
     "interval": 1,
-    "justify": "center",
+    "justify": "right",
     "format": "{:%H\n%M}",
     "format-alt": "{:%d\n%m}",
     "tooltip-format": "<tt><small>{calendar}</small></tt>",
@@ -43,7 +43,7 @@
   },
   "custom/notification": {
     "tooltip": true,
-    "justify": "center",
+    "justify": "right",
     "format": "<span size='14pt'>{icon}</span>",
     "format-icons": {
       "notification": "󱅫",
@@ -64,6 +64,7 @@
   },
   "battery": {
     "interval": 5,
+    "justify": "center",
     "states": {
       "critical": 10
     },
