@@ -10,6 +10,7 @@ in {
     directories = [
       ".gnupg" ".password-store" ".ssh" "Documents"
       ".local/share/zoxide" ".config/net.imput.helium"
+      ".config/onedrive"
     ];
   };
  
@@ -33,6 +34,7 @@ in {
       done
       '';
     }) )
+    netpbm grim     # TODO needed for is-dark.nu, remove from here to avoid polluting the namespace
   ];
 
   home.file.".local/share/icons/TheDot".source =
@@ -182,7 +184,7 @@ in {
       Requires = [ "hyprsunset.service" ];
     };
     Install.WantedBy = [ "default.target" ];
-    Service.ExecStart = "${./scripts/sun.py}";
+    Service.ExecStart = "${./scripts/sun.py} ${pkgs.hyprland}/bin/hyprctl";
   };
  
   stylix.targets.hyprlock.enable = false;

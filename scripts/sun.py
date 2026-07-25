@@ -4,6 +4,12 @@ from datetime import datetime, timezone, timedelta
 from zoneinfo import ZoneInfo
 import os
 import time
+import sys
+
+def info(s):     # Cause I couldn't get the logging module working...
+    print('INFO', s, file=sys.stderr)
+
+HYPRCTL = sys.argv[1]
 
 # Written by claude...
 def solar_altitude_deg(lat: float, lon: float, when: datetime) -> float:
@@ -87,17 +93,18 @@ def should_update(last_sent_k: float, candidate_k: float, threshold_mireds: floa
     return mired_delta >= threshold_mireds
 
 def set_temperature(k):
-    os.system(f'hyprctl hyprsunset temperature {k} > /dev/null')
+    os.system(f'{HYPRCTL} hyprsunset temperature {k} > /dev/null')
+    info(f'Set temperature at {k}')
 
 def update_and_get_next(daytime):
     when = daytime.astimezone(timezone.utc)
     k_now = get_color(when)
     set_temperature(k_now)
-    # Binary search
+    # Binary search (a linear search would work just as well...)
     increment = timedelta(minutes=30)
     lower = when
     upper = None
-    while upper is None or upper - lower > timedelta(minutes=1):
+    while upper is None or upper - lower > timedelta(seconds=1):
         if should_update(k_now, get_color(when)):
             upper = when
             when -= increment
@@ -106,11 +113,14 @@ def update_and_get_next(daytime):
             when += increment
         if upper is not None: increment /= 2
     ret = upper.astimezone(tz)
-    print(f'Setting temperature at {k_now}, next update at {ret}')
-    return upper.astimezone(tz)
+    info(f'Next update at {ret}')
+    return ret
 
-if __name__ == "__main__":
-    daytime = datetime.now(tz)
-    while True:
-        daytime = update_and_get_next(daytime)
-        time.sleep(daytime.timestamp() - datetime.now(tz).timestamp())
+info("Starting...")
+
+daytime = datetime.now(tz)
+while True:
+    daytime = update_and_get_next(daytime)
+    l = daytime.timestamp() - datetime.now(tz).timestamp()
+    if l < 0: l = 1
+    time.sleep(l)
