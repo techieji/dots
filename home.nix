@@ -10,7 +10,7 @@ in {
     directories = [
       ".gnupg" ".password-store" ".ssh" "Documents"
       ".local/share/zoxide" ".config/net.imput.helium"
-      ".config/onedrive"
+      ".config/onedrive" ".config/Slack" ".config/discord"
     ];
   };
  
@@ -18,7 +18,8 @@ in {
   home.homeDirectory = "/home/prajasekar";
   home.packages = with pkgs; [
     ctags
-    # obsidian
+    obsidian
+    slack discord
     grimblast
     speedcrunch
     libreoffice-qt
@@ -36,6 +37,7 @@ in {
     }) )
     netpbm grim     # TODO needed for is-dark.nu, remove from here to avoid polluting the namespace
   ];
+  home.sessionVariables.NIXOS_OZONE_WL = "1";
 
   home.file.".local/share/icons/TheDot".source =
     pkgs.runCommand "hyprcursor-TheDot" {} "mkdir -p $out; tar xf ${cursorInfo.path} -C $out --strip-components=1";
@@ -281,7 +283,7 @@ in {
       border-width = 0;
     };
   };
- 
+
   home.stateVersion = "26.05";
   programs.home-manager.enable = true;
 }

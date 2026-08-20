@@ -63,6 +63,7 @@ hl.config({
         dim_inactive = false,
         dim_strength = 0.3,
         dim_special = 0.1,
+        screen_shader = "${../resources/shader.frag}",
         blur = {
             -- Lots of options here: https://wiki.hypr.land/Configuring/Basics/Variables/#blur
             enabled = true,

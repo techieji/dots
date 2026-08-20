@@ -51,7 +51,7 @@ On this last one, important notes:
    [avizo](https://github.com/heyjuvi/avizo) for brightness, audio, and mic popups.
  - Misc:
    [weylus](https://github.com/H-M-H/Weylus) for remote tablet support.
-   [hyprsunset](https://wiki.hypr.land/Hypr-Ecosystem/hyprsunset/) combined with a custom script to match outdoor light.
+   [hyprsunset](https://wiki.hypr.land/Hypr-Ecosystem/hyprsunset/) combined with a custom systemd service to match outdoor light.
    [onedrive](https://github.com/abraunegg/onedrive) sync capability (command line only).
    [stylix](https://github.com/nix-community/stylix) for theming.
    [nh](https://github.com/nix-community/nh) for building the system.
@@ -79,6 +79,8 @@ to switch to persisting all app config if need be).
  - `swaync.css` is also a nix function. This is because the stylix options are dumb and don't let me inject my own CSS? Actually
    this seems wrong. This is fixable.
  - Vim plugins are maintained in `home.nix`. Everything else is in `config/vimrc`.
+ - There is a custom shader in `resources/shader.frag` that uses arctan to reduce the intensity of bright colors. This affects the fidelity
+   of colors.
 
 Impurities:
  - Networking configurations are persisted instead of being in `configuration.nix`.

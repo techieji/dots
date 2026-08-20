@@ -17,8 +17,8 @@ def is-dark [] {
 
   let s = $"($x),($y) ($bw)x($bh)"
 
-  let mean = grim -g $s -t ppm - | pamsumm -mean | parse "the mean of all samples is {mean}"
-  ($mean.mean.0 | into float) < 50
+  let mean = grim -g $s -t ppm - | pamsumm -mean -brief | into float
+  $mean < 50
 }
 
 def main [delta: string] {
