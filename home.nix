@@ -9,7 +9,7 @@ let
     configHome = "~/.config";
   };
 in {
-  imports = [ "${inputs.impermanence}/home-manager.nix" ];
+  imports = [ "${inputs.impermanence}/home-manager.nix" inputs.direnv-instant.homeModules.direnv-instant ];
 
   home.persistence."/persist/" = {
     directories = [
@@ -286,6 +286,17 @@ in {
       modules-right = [ "custom/notification" "battery" ];
     };
     systemd.enable = true;
+  };
+
+  programs.direnv-instant = { 
+    enable = true;
+    enableNushellIntegration = true;
+  };
+
+  programs.direnv = {
+    enable = true;
+    nix-direnv.enable = true;
+    enableNushellIntegration = true;
   };
 
   services.avizo = {
