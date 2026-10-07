@@ -3,21 +3,28 @@ let
   cursorInfo = { name = "TheDot"; size = "24"; path = ./resources/TheDot.tar; };
   iosevkaRadon = pkgs.iosevka.override { set = "Radon"; privateBuildPlan = builtins.readFile ./config/iosevka-radon.toml; };
   background = "${./resources/backgrounds/nightscape.png}";
+
+  xdg = {
+    dataHome = "~/.local/share";
+    configHome = "~/.config";
+  };
 in {
   imports = [ "${inputs.impermanence}/home-manager.nix" ];
 
   home.persistence."/persist/" = {
     directories = [
       ".gnupg" ".password-store" ".ssh" "Documents"
-      ".local/share/zoxide" ".config/net.imput.helium"
-      ".config/onedrive" ".config/Slack" ".config/discord"
+      "${xdg.dataHome}/zoxide" "${xdg.configHome}/net.imput.helium"
+      "${xdg.configHome}/onedrive" "${xdg.configHome}/Slack" "${xdg.configHome}/discord"
+      ".vim"   # For Ultisnips
     ];
   };
  
   home.username = "prajasekar";
   home.homeDirectory = "/home/prajasekar";
   home.packages = with pkgs; [
-    ctags
+    musescore
+    universal-ctags
     obsidian
     slack discord
     grimblast
@@ -36,11 +43,18 @@ in {
       '';
     }) )
     netpbm grim     # TODO needed for is-dark.nu, remove from here to avoid polluting the namespace
+    inputs.antigravity-nix.packages.x86_64-linux.google-antigravity-cli
   ];
   home.sessionVariables.NIXOS_OZONE_WL = "1";
 
-  home.file.".local/share/icons/TheDot".source =
+  xdg.enable = true;
+
+  xdg.dataFile."icons/TheDot".source =
     pkgs.runCommand "hyprcursor-TheDot" {} "mkdir -p $out; tar xf ${cursorInfo.path} -C $out --strip-components=1";
+
+  xdg.configFile."ctags/.ctags".text = ''
+    _build
+  '';
 
   programs.zathura.enable = true;
 

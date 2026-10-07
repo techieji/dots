@@ -9,6 +9,15 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
+  # Hibernation support
+  swapDevices = [{ device = "/persist/swap/swapfile"; }];
+  boot.resumeDevice = "/dev/disk/by-uuid/3d3f9482-968e-46a2-b464-637b97a82845";
+  boot.kernelParams = [
+    "resume=/dev/disk/by-uuid/3d3f9482-968e-46a2-b464-637b97a82845"
+    "resume_offset=34118607"
+  ];
+  powerManagement.enable = true;
+
   networking.hostName = "pradtop"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
@@ -123,6 +132,10 @@
     overrideStrategy = "asDropin";
     serviceConfig.ExecStart = ["" "@${pkgs.util-linux}/sbin/agetty agetty --login-program ${config.services.getty.loginProgram} --autologin prajasekar --noclear --keep-baud %I 115200,38400,9600 $TERM"];
   };
+
+  virtualisation.podman.enable = true;
+  virtualisation.containers.enable = true;
+  virtualisation.containers.registries.search = [ "docker.io" ];
 
   programs.gnupg.agent.enable = true;
   programs.ydotool.enable = true;        # For password menu

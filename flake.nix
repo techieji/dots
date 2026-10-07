@@ -10,6 +10,7 @@
 
     # Other flakes
     helium = { url = "github:FKouhai/helium2nix/main"; inputs.nixpkgs.follows = "nixpkgs"; };
+    antigravity-nix = { url = "github:jacopone/antigravity-nix"; inputs.nixpkgs.follows = "nixpkgs"; };
   };
 
   outputs = { self, nixpkgs, home-manager, stylix, ... }@inputs: {
