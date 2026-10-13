@@ -25,7 +25,7 @@ in {
     ".config/codex-harness/policy.json".source = ./policy.json;
     ".config/codex-harness/prompts".source = ./prompts;
     ".config/codex-harness/schemas".source = ./schemas;
-    ".agents/skills/manage-nix-config".source = ./skills/manage-nix-config;
+    ".codex/skills/manage-nix-config".source = ./skills/manage-nix-config;
   };
   systemd.user.services.codex-harness = {
     Unit.Description = "Process queued Codex harness jobs";

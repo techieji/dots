@@ -43,8 +43,10 @@ Run checks from the flake root in this order, stopping to diagnose failures:
 3. Run nix flake check when builds are appropriate.
 4. For behavioral or system changes, run nh os test . only when the repository permits it and the user has authorized temporary activation.
 5. Exercise the affected application, service, desktop component, or command when practical.
+6. After Home Manager activation, verify every managed config or skill exists at its intended destination. For a Home Manager file source, use readlink -f on the destination and confirm it resolves into the active Home Manager generation or Nix store source. Check the application-specific discovery directory, not only the repository source.
+7. If activation was not authorized or performed, state that the declaration was evaluated but the runtime symlink could not yet be verified.
 
-Report checks that were not run and why.
+Report checks that were not run and why. Do not claim a config is installed or exposed merely because evaluation passed.
 
 ## Hard safety boundaries
 
