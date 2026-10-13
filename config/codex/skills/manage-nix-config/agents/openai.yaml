@@ -1,0 +1,4 @@
+interface:
+  display_name: "Nix Configuration Manager"
+  short_description: "Manage Nix configuration and install tools"
+  default_prompt: "Use $manage-nix-config to install a tool declaratively and validate the Nix configuration."
