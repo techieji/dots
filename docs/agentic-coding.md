@@ -1,8 +1,8 @@
 # Getting started with agentic coding
 
 Agentic coding works best as a conversation with a capable teammate. Open a
-terminal in the project you want to change and run `codex`, or open **ChatGPT**
-from the app launcher for a graphical experience. Start with a concrete goal:
+terminal in the project you want to change and run `codex`. Start with a
+concrete goal:
 
 > Add a search box to the customer list. Match the existing style, test it,
 > and explain what changed.
@@ -29,8 +29,6 @@ large, ask the agent to split it into small, reviewable stages.
 
 - **Codex** is the main coding agent. It can inspect a repository, edit files,
   run checks, and explain its work.
-- **ChatGPT** provides the desktop experience and includes Codex for working
-  with code.
 - **Semantic project search** helps the agent understand relationships across
   a large codebase. Run `codex-semantic` if you want to explore it yourself.
 - **Context audit** creates a compact overview of a repository for an AI. Run
