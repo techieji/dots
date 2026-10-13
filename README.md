@@ -61,6 +61,9 @@ On this last one, important notes:
  - `nh os test .` for quick changes that don't need to be persisted
  - `nh os boot .` when doing something with the filesystem this is booting off of.
 
+New to coding agents? See [Getting started with agentic coding](docs/agentic-coding.md)
+for a short, experience-focused guide to the included tools.
+
 ## Persistence notes
 
 (TODO) `persistence.toml` contains the directories that each app needs to be persisted. Here is a good way to determine this for userspace apps:

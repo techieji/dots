@@ -4,5 +4,21 @@ approval_policy = "on-request"
 [sandbox_workspace_write]
 network_access = false
 
+[mcp_servers.serena]
+command = "@serena@"
+args = [
+  "start-mcp-server",
+  "--project-from-cwd",
+  "--context",
+  "codex",
+  "--enable-web-dashboard",
+  "false",
+  "--open-web-dashboard",
+  "false",
+]
+
 [projects."/home/prajasekar/Documents/projects/.dots"]
+trust_level = "trusted"
+
+[projects."/home/prajasekar/Documents/projects/jobs"]
 trust_level = "trusted"

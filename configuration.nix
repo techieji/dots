@@ -2,7 +2,18 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, lib, inputs, ... }: {
+{ config, pkgs, lib, inputs, ... }:
+let
+  codexHarness = pkgs.writeShellApplication {
+    name = "codex-harness";
+    runtimeInputs = [ pkgs.bubblewrap pkgs.codex pkgs.git pkgs.jq pkgs.libnotify pkgs.python3 pkgs.sqlite ];
+    text = ''exec ${pkgs.python3}/bin/python3 ${./config/codex/harness.py} "$@"'';
+  };
+  codexRequirements = pkgs.replaceVars ./config/codex/requirements.toml {
+    harness = "${codexHarness}/bin/codex-harness";
+    managedDir = "${codexHarness}/bin";
+  };
+in {
   imports = [ ./hardware-configuration.nix inputs.impermanence.nixosModules.impermanence ];
 
   # Bootloader.
@@ -166,7 +177,7 @@
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
-  environment.etc."codex/requirements.toml".source = ./config/codex/requirements.toml;
+  environment.etc."codex/requirements.toml".source = codexRequirements;
 
   environment.systemPackages = with pkgs; [ python3 vim ];
 

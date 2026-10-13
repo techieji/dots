@@ -42,9 +42,11 @@ Run checks from the flake root in this order, stopping to diagnose failures:
 2. Run nix flake check --no-build for an evaluation-only check.
 3. Run nix flake check when builds are appropriate.
 4. For behavioral or system changes, run nh os test . only when the repository permits it and the user has authorized temporary activation.
-5. Exercise the affected application, service, desktop component, or command when practical.
-6. After Home Manager activation, verify every managed config or skill exists at its intended destination. For a Home Manager file source, use readlink -f on the destination and confirm it resolves into the active Home Manager generation or Nix store source. Check the application-specific discovery directory, not only the repository source.
-7. If activation was not authorized or performed, state that the declaration was evaluated but the runtime symlink could not yet be verified.
+5. For every user-facing CLI, confirm its package is directly present in the user's Home Manager or NixOS package set; a runtime dependency of another wrapper does not expose it on PATH.
+6. After activation, test command -v <command> and <command> --version from the user's normal login shell. Do not substitute a Nix store path, development shell, root shell, or agent-specific PATH for this check.
+7. Exercise the affected application, service, desktop component, or command when practical.
+8. After Home Manager activation, verify every managed config or skill exists at its intended destination. For a Home Manager file source, use test -L and readlink on the destination and confirm it resolves into the active Home Manager generation or Nix store source. Check the application-specific discovery directory, not only the repository source.
+9. If activation was not authorized or performed, state that the declaration was evaluated but runtime PATH and symlink accessibility could not yet be verified.
 
 Report checks that were not run and why. Do not claim a config is installed or exposed merely because evaluation passed.
 

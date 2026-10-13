@@ -1,1 +1,29 @@
 allowed_sandbox_modes = ["read-only", "workspace-write"]
+
+[features]
+hooks = true
+
+[hooks]
+managed_dir = "@managedDir@"
+
+[[hooks.UserPromptSubmit]]
+
+[[hooks.UserPromptSubmit.hooks]]
+type = "command"
+command = "@harness@ hook prompt"
+timeout = 3
+
+[[hooks.Stop]]
+
+[[hooks.Stop.hooks]]
+type = "command"
+command = "@harness@ hook stop"
+timeout = 3
+
+[[hooks.PreToolUse]]
+matcher = "Bash|shell|exec_command"
+
+[[hooks.PreToolUse.hooks]]
+type = "command"
+command = "@harness@ hook guard"
+timeout = 3
