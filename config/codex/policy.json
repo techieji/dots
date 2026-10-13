@@ -1,0 +1,1 @@
+{"prompt_retention_days":30,"failed_worktree_retention_days":7,"archive_unused_days":90,"prompt_max_bytes":8192,"memory_injection_max_chars":4000,"memory_match_limit":2,"skill_limit":40,"same_task_threshold":0.68,"classification_threshold":0.45,"memory_word_limit":800,"skill_word_limit":1200,"retry_minutes":[5,15,45]}

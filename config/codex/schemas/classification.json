@@ -1,0 +1,1 @@
+{"type":"object","properties":{"same_task":{"type":"boolean"},"reason":{"type":"string"}},"required":["same_task","reason"],"additionalProperties":false}

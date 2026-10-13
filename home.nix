@@ -9,14 +9,19 @@ let
     configHome = "~/.config";
   };
 in {
-  imports = [ "${inputs.impermanence}/home-manager.nix" inputs.direnv-instant.homeModules.direnv-instant ];
+  imports = [
+    "${inputs.impermanence}/home-manager.nix"
+    inputs.direnv-instant.homeModules.direnv-instant
+    ./config/codex
+  ];
 
   home.persistence."/persist/" = {
     directories = [
       ".gnupg" ".password-store" ".ssh" "Documents"
       "${xdg.dataHome}/zoxide" "${xdg.configHome}/net.imput.helium"
       "${xdg.configHome}/onedrive" "${xdg.configHome}/Slack" "${xdg.configHome}/discord"
-      ".vim"   # For Ultisnips
+      ".codex" ".vim"   # Codex state and Ultisnips
+      ".agents" ".serena" ".local/state/codex-harness" ".local/share/codex-harness"
     ];
   };
  

@@ -1,0 +1,1 @@
+{"hooks":{"UserPromptSubmit":[{"hooks":[{"type":"command","command":"@harness@ hook prompt","timeout":3}]}],"Stop":[{"hooks":[{"type":"command","command":"@harness@ hook stop","timeout":3}]}],"PreToolUse":[{"matcher":"Bash|shell|exec_command","hooks":[{"type":"command","command":"@harness@ hook guard","timeout":3}]}]}}

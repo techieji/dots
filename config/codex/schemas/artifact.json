@@ -1,0 +1,1 @@
+{"type":"object","properties":{"slug":{"type":"string","pattern":"^[a-z0-9]+(?:-[a-z0-9]+)*$"},"name":{"type":"string"},"description":{"type":"string"},"memory":{"type":"string"},"skill":{"type":"string"}},"required":["slug","name","description","memory","skill"],"additionalProperties":false}

@@ -126,6 +126,7 @@
     isNormalUser = true;
     description = "Pradhyum Rajasekar";
     extraGroups = [ "networkmanager" "wheel" "ydotool" ];
+    linger = true;
   };
 
   systemd.services."getty@tty1" = {     # Autologin?
@@ -164,6 +165,8 @@
   };
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
+  environment.etc."codex/requirements.toml".source = ./config/codex/requirements.toml;
 
   environment.systemPackages = with pkgs; [ python3 vim ];
 

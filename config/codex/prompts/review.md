@@ -1,0 +1,1 @@
+Review the proposed generated memory and skill. Reject any secret, absolute personal path, executable script, privilege elevation, destructive command, repository-specific assumption, unsupported claim, or word-limit violation. Return only schema-valid JSON.

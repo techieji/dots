@@ -1,0 +1,1 @@
+Create a concise reusable memory and an instruction-only Codex SKILL.md from the successful redacted examples. Generalize away repository details. Do not include scripts, secrets, absolute personal paths, elevation, destructive commands, or claims not supported by the examples. Keep memory under 800 words and skill under 1200 words. Return only schema-valid JSON.
