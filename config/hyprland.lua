@@ -157,13 +157,13 @@ hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
 
 -- Hotkeys ----------------
 
-hl.bind("XF86AudioMute", hl.dsp.exec_cmd("volumectl toggle-mute"))
-hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("volumectl -u down"))
-hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("volumectl -u up"))
-hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd("volumectl -m toggle-mute"))
+hl.bind("XF86AudioMute", hl.dsp.exec_cmd("avizo-contrast volume sink toggle-mute"))
+hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("avizo-contrast volume sink down"))
+hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("avizo-contrast volume sink up"))
+hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd("avizo-contrast volume source toggle-mute"))
 
-hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("${../scripts/lightctl.nu} -- -5"))
-hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("${../scripts/lightctl.nu} -- +5"))
+hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("avizo-contrast brightness -5"))
+hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("avizo-contrast brightness +5"))
 
 hl.bind("XF86Calculator", hl.dsp.exec_cmd("${pkgs.speedcrunch}/bin/speedcrunch", { float = true, opacity = "0.9" }))
 hl.bind("XF86KbdLightOnOff", hl.dsp.exec_cmd("${../scripts/toggle-keyboard.nu}"))

@@ -5,14 +5,15 @@ let
   background = "${./resources/backgrounds/nightscape.png}";
 
   xdg = {
-    dataHome = "~/.local/share";
-    configHome = "~/.config";
+    dataHome = ".local/share";
+    configHome = ".config";
   };
 in {
   imports = [
     "${inputs.impermanence}/home-manager.nix"
     inputs.direnv-instant.homeModules.direnv-instant
     ./config/codex
+    ./config/avizo.nix
   ];
 
   home.persistence."/persist/" = {
@@ -47,7 +48,6 @@ in {
       done
       '';
     }) )
-    netpbm grim     # TODO needed for is-dark.nu, remove from here to avoid polluting the namespace
     inputs.antigravity-nix.packages.x86_64-linux.google-antigravity-cli
   ];
   home.sessionVariables.NIXOS_OZONE_WL = "1";
@@ -271,6 +271,8 @@ in {
       widget-config = { title = { text = "Notifications"; clear-all-button = true; button-text = "Clear"; }; };
     };
   };
+
+  services.poweralertd.enable = true;
  
   programs.vicinae = { enable = true; systemd.enable = true; };      # App launcher
 
@@ -293,26 +295,18 @@ in {
     systemd.enable = true;
   };
 
-  programs.direnv-instant = { 
-    enable = true;
-    enableNushellIntegration = true;
-  };
+  #programs.direnv-instant = { 
+  #  enable = true;
+  #  enableNushellIntegration = true;
+  #};
 
-  programs.direnv = {
-    enable = true;
-    nix-direnv.enable = true;
-    enableNushellIntegration = true;
-  };
+  #programs.direnv = {
+  #  enable = true;
+  #  nix-direnv.enable = true;
+  #  enableNushellIntegration = true;
+  #};
 
-  services.avizo = {
-    enable = true;
-    settings.default = {
-      time = 1;
-      block-count = 20;
-      y-offset = 0.5; x-offset = 0.5;
-      border-width = 0;
-    };
-  };
+  services.avizoContrast.enable = true;
 
   home.stateVersion = "26.05";
   programs.home-manager.enable = true;
