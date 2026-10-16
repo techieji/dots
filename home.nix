@@ -1,6 +1,17 @@
 { config, pkgs, lib, system, inputs, ... }: 
 let
-  cursorInfo = { name = "TheDot"; size = "24"; path = ./resources/TheDot.tar; };
+  cursorInfo = {
+    name = "TheDot";
+    size = 24;
+    hyprcursor = ./resources/TheDot.tar;
+    xcursor = ./resources/thedot0.6.tar;
+  };
+  cursorPackage = pkgs.runCommand "thedot-cursors" {} ''
+    mkdir -p source $out/share/icons/${cursorInfo.name}
+    tar xf ${cursorInfo.xcursor} -C source
+    cp -r source/thedot0.6/Dot-Transparent/. $out/share/icons/${cursorInfo.name}/
+    tar xf ${cursorInfo.hyprcursor} -C $out/share/icons/${cursorInfo.name} --strip-components=1
+  '';
   iosevkaRadon = pkgs.iosevka.override { set = "Radon"; privateBuildPlan = builtins.readFile ./config/iosevka-radon.toml; };
   background = "${./resources/backgrounds/nightscape.png}";
 
@@ -54,8 +65,16 @@ in {
 
   xdg.enable = true;
 
-  xdg.dataFile."icons/TheDot".source =
-    pkgs.runCommand "hyprcursor-TheDot" {} "mkdir -p $out; tar xf ${cursorInfo.path} -C $out --strip-components=1";
+  home.pointerCursor = {
+    enable = true;
+    inherit (cursorInfo) name size;
+    package = cursorPackage;
+    gtk.enable = true;
+    hyprcursor.enable = true;
+    x11.enable = true;
+  };
+
+  gtk.enable = true;
 
   xdg.configFile."ctags/.ctags".text = ''
     _build

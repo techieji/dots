@@ -32,11 +32,6 @@ local menu = "${pkgs.vicinae}/bin/vicinae open"
 local browser = "${helium}/bin/helium"
 local reader = "${pkgs.zathura}/bin/zathura"
 
--- Env vars ----------------
-
-hl.env("HYPRCURSOR_THEME", "TheDot")
-hl.env("HYPRCURSOR_SIZE", "24")
-
 -- Autostart ---------------
 
 ---- To avoid using a login manager
