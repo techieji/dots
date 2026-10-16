@@ -87,6 +87,10 @@ hl.config({
             disable_while_typing = false,
             natural_scroll = true
         }
+    },
+    cursor = {
+        enable_hyprcursor = false,
+        sync_gsettings_theme = true
     }
 })
 
