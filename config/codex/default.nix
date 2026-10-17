@@ -6,9 +6,20 @@ let
     text = ''exec ${pkgs.python3}/bin/python3 ${./harness.py} "$@"'';
   };
   serenaPackage = inputs.serena.packages.${system}.default;
+  heliumPackage = inputs.helium.defaultPackage.${system};
+  playwrightHeliumMcp = pkgs.writeShellApplication {
+    name = "playwright-helium-mcp";
+    runtimeInputs = [ pkgs.playwright-mcp ];
+    text = ''
+      exec playwright-mcp \
+        --browser=chromium \
+        --executable-path=${lib.getExe heliumPackage} \
+        "$@"
+    '';
+  };
 in {
   home.packages = [
-    harness pkgs.codex pkgs.bubblewrap pkgs.sqlite pkgs.jq pkgs.libnotify pkgs.repomix pkgs.nixd serenaPackage
+    harness playwrightHeliumMcp pkgs.codex pkgs.bubblewrap pkgs.sqlite pkgs.jq pkgs.libnotify pkgs.repomix pkgs.nixd serenaPackage
     (pkgs.writeShellScriptBin "codex-semantic" ''
       exec ${lib.getExe serenaPackage} "$@"
     '')
