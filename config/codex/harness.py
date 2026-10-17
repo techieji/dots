@@ -73,7 +73,7 @@ def stop_hook(e):
  return 0
 def runjson(text,schema,cwd,effort="low"):
  with tempfile.TemporaryDirectory(prefix=APP) as td:
-  out=Path(td)/"out.json";cmd=["codex","exec","--sandbox","workspace-write","--ask-for-approval","never","--config",'model_reasoning_effort="'+effort+'"',"--output-schema",str(schema),"--output-last-message",str(out),"-"]
+  out=Path(td)/"out.json";cmd=["codex","exec","--sandbox","workspace-write","--config",'approval_policy="never"',"--config",'model_reasoning_effort="'+effort+'"',"--output-schema",str(schema),"--output-last-message",str(out),"-"]
   try:r=subprocess.run(cmd,input=text,text=True,cwd=cwd,env=os.environ|{"CODEX_HARNESS_INTERNAL":"1"},capture_output=True,timeout=14400)
   except subprocess.TimeoutExpired:return None,"timeout"
   try:return (json.loads(out.read_text()),r.stdout+r.stderr) if r.returncode==0 else (None,r.stdout+r.stderr)
@@ -127,7 +127,7 @@ def execute(j):
  if subprocess.run(["git","-C",str(repo),"rev-parse","--git-dir"],capture_output=True).returncode:raise RuntimeError("not a Git worktree")
  if not wt.exists():subprocess.run(["git","-C",str(repo),"worktree","add","--detach",str(wt),"HEAD"],check=True,capture_output=True)
  with connect() as d:d.execute("UPDATE jobs SET worktree=?,updated_at=? WHERE id=?",(str(wt),now(),jid));d.commit()
- cmd=["codex","exec","--json","--sandbox","workspace-write","--ask-for-approval","never","--output-last-message",str(out/"final.md"),"-"];env=os.environ|{"CODEX_HARNESS_INTERNAL":"1"}
+ cmd=["codex","exec","--json","--sandbox","workspace-write","--config",'approval_policy="never"',"--output-last-message",str(out/"final.md"),"-"];env=os.environ|{"CODEX_HARNESS_INTERNAL":"1"}
  with (out/"events.jsonl").open("w") as log:
   p=subprocess.Popen(cmd,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,cwd=wt,env=env);p.stdin.write(Path(j["prompt_path"]).read_text());p.stdin.close()
   with connect() as d:
