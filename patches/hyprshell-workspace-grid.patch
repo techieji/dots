@@ -1,0 +1,869 @@
+--- a/crates/windows-lib/src/overview/root.rs
++++ b/crates/windows-lib/src/overview/root.rs
+@@ -1,5 +1,5 @@
+ use crate::data::{SortConfig, collect_data};
+-use crate::next::{find_next_client, find_next_workspace};
++use crate::next::find_next_workspace;
+ use crate::overview::window::{
+     OverviewWindow, OverviewWindowData, OverviewWindowInit, OverviewWindowInput,
+     OverviewWindowOutput,
+@@ -32,6 +32,7 @@
+     overview: config_lib::Overview,
+     open: bool,
+     data: OverviewData,
++    preferred_column: usize,
+
+     launcher_root: Controller<LauncherRoot>,
+     windows: BTreeMap<MonitorId, Controller<OverviewWindow>>,
+@@ -49,6 +50,83 @@
+     thumbnail_burst: bool,
+ }
+
++fn grid_rows(data: &HyprlandData) -> Vec<(WorkspaceId, Vec<(ClientId, &core_lib::ClientData)>)> {
++    data.workspaces
++        .iter()
++        .filter(|(workspace, ws)| *workspace > 0 && ws.any_client_enabled)
++        .filter_map(|(workspace, _)| {
++            let clients = data
++                .clients
++                .iter()
++                .filter(|(_, client)| client.enabled && client.workspace == *workspace)
++                .map(|(id, client)| (*id, client))
++                .collect::<Vec<_>>();
++            (!clients.is_empty()).then_some((*workspace, clients))
++        })
++        .collect()
++}
++
++fn active_column(data: &HyprlandData, active: Active) -> usize {
++    grid_rows(data)
++        .iter()
++        .find(|(workspace, _)| *workspace == active.workspace)
++        .and_then(|(_, clients)| {
++            active
++                .client
++                .and_then(|active| clients.iter().position(|(id, _)| *id == active))
++        })
++        .unwrap_or(0)
++}
++
++fn find_grid_client(
++    direction: Direction,
++    data: &HyprlandData,
++    active: Active,
++    preferred_column: usize,
++) -> (Active, usize) {
++    let rows = grid_rows(data);
++    if rows.is_empty() {
++        return (active, preferred_column);
++    }
++
++    let row = rows
++        .iter()
++        .position(|(workspace, _)| *workspace == active.workspace)
++        .unwrap_or(0);
++    let current_column = active
++        .client
++        .and_then(|active| rows[row].1.iter().position(|(id, _)| *id == active))
++        .unwrap_or(0);
++
++    let (next_row, requested_column, next_preferred) = match direction {
++        Direction::Left => (
++            row,
++            current_column.saturating_sub(1),
++            current_column.saturating_sub(1),
++        ),
++        Direction::Right => {
++            let column = (current_column + 1).min(rows[row].1.len() - 1);
++            (row, column, column)
++        }
++        Direction::Up => (row.saturating_sub(1), preferred_column, preferred_column),
++        Direction::Down => (
++            (row + 1).min(rows.len() - 1),
++            preferred_column,
++            preferred_column,
++        ),
++    };
++    let column = requested_column.min(rows[next_row].1.len() - 1);
++    let (id, client) = rows[next_row].1[column];
++    (
++        Active {
++            client: Some(id),
++            workspace: rows[next_row].0,
++            monitor: client.monitor,
++        },
++        next_preferred,
++    )
++}
++
+ #[derive(Debug)]
+ pub enum OverviewRootInput {
+     SetOverview(config_lib::Overview),
+@@ -129,6 +207,12 @@
+                         OverviewWindowOutput::ClickedC(cl) => {
+                             OverviewRootInput::CloseOverviewClickC(cl)
+                         }
++                        OverviewWindowOutput::Navigate(direction) => {
++                            OverviewRootInput::Switch(direction, false)
++                        }
++                        OverviewWindowOutput::Close(do_switch) => {
++                            OverviewRootInput::CloseOverview(do_switch)
++                        }
+                     });
+                 windows.entry(monitor.id).insert_entry(overview_window);
+             }
+@@ -153,6 +237,7 @@
+             windows,
+             launcher_root,
+             data: OverviewData::default(),
++            preferred_column: 0,
+             #[cfg(feature = "live_windows")]
+             live_thumbnails,
+             #[cfg(feature = "live_windows")]
+@@ -253,7 +338,7 @@
+ impl OverviewRoot {
+     #[allow(unused_variables)]
+     fn open_overview(&mut self, sender: &ComponentSender<Self>) {
+-        let (hypr_data, active) = match collect_data(&SortConfig {
++        let (mut hypr_data, active) = match collect_data(&SortConfig {
+             filter_current_monitor: self.overview.filter_by_current_monitor,
+             filter_current_workspace: self.overview.filter_by_current_workspace,
+             filter_same_class: self.overview.filter_by_same_class,
+@@ -270,6 +355,11 @@
+                 return;
+             }
+         };
++        hypr_data.workspaces.sort_by_key(|(id, _)| *id);
++        hypr_data
++            .clients
++            .sort_by_key(|(_, client)| (client.workspace, client.x, client.y));
++        self.preferred_column = active_column(&hypr_data, active);
+         self.data = OverviewData {
+             active,
+             hypr_data: hypr_data.clone(),
+@@ -298,30 +388,14 @@
+         }
+     }
+
+-    fn navigate(&mut self, direction: Direction, workspace: bool) {
+-        let new_active = if workspace {
+-            find_next_workspace(
+-                direction,
+-                false,
+-                &self.data.hypr_data,
+-                self.data.active,
+-                self.general.items_per_row,
+-            )
+-        } else {
+-            if direction == Direction::Up || direction == Direction::Down {
+-                error!(
+-                    "Clients in overview can only be switched left and right (forwards and backwards)"
+-                );
+-                return;
+-            }
+-            find_next_client(
+-                direction,
+-                false,
+-                &self.data.hypr_data,
+-                self.data.active,
+-                self.general.items_per_row,
+-            )
+-        };
++    fn navigate(&mut self, direction: Direction, _workspace: bool) {
++        let (new_active, preferred_column) = find_grid_client(
++            direction,
++            &self.data.hypr_data,
++            self.data.active,
++            self.preferred_column,
++        );
++        self.preferred_column = preferred_column;
+
+         let old_active = self.data.active;
+         self.data.active = new_active;
+@@ -393,7 +467,7 @@
+     }
+
+     fn reload_overview(&mut self) {
+-        let (hypr_data, _active) = match collect_data(&SortConfig {
++        let (mut hypr_data, _active) = match collect_data(&SortConfig {
+             filter_current_monitor: self.overview.filter_by_current_monitor,
+             filter_current_workspace: self.overview.filter_by_current_workspace,
+             filter_same_class: self.overview.filter_by_same_class,
+@@ -410,6 +484,10 @@
+                 return;
+             }
+         };
++        hypr_data.workspaces.sort_by_key(|(id, _)| *id);
++        hypr_data
++            .clients
++            .sort_by_key(|(_, client)| (client.workspace, client.x, client.y));
+
+         while match self.data.active {
+             Active {
+@@ -434,29 +512,14 @@
+     }
+
+     fn render(&self, hypr_data: HyprlandData, active: Active, open: bool) {
+-        let mut mapped_ws = BTreeMap::new();
+-        for (i, workspace_data) in hypr_data.workspaces {
+-            mapped_ws
+-                .entry(workspace_data.monitor)
+-                .or_insert_with(Vec::new)
+-                .push((i, workspace_data));
+-        }
+-        let mut mapped_cl = BTreeMap::new();
+-        for (i, client_data) in hypr_data.clients {
+-            mapped_cl
+-                .entry(client_data.monitor)
+-                .or_insert_with(Vec::new)
+-                .push((i, client_data));
+-        }
+-
+         for (monitor_id, window) in &self.windows {
+             if let Some(data) = hypr_data.monitors.find_by_first(monitor_id) {
+-                // always update, maybe last client got removed
+                 let data = OverviewWindowData {
+                     active,
+-                    clients: mapped_cl.remove(monitor_id).unwrap_or_default(),
+-                    workspaces: mapped_ws.remove(monitor_id).unwrap_or_default(),
++                    clients: hypr_data.clients.clone(),
++                    workspaces: hypr_data.workspaces.clone(),
+                     monitor: data.clone(),
++                    show_selector: *monitor_id == active.monitor,
+                 };
+                 if open {
+                     window.emit(OverviewWindowInput::OpenOverview((
+--- a/crates/windows-lib/src/overview/window.rs
++++ b/crates/windows-lib/src/overview/window.rs
+@@ -1,11 +1,12 @@
+ use crate::shared::{Workspaces, WorkspacesInit, WorkspacesInput, WorkspacesOutput};
+ use core_lib::{
+-    Active, ClientData, ClientId, MonitorData, OVERVIEW_NAMESPACE, WorkspaceData, WorkspaceId,
++    Active, ClientData, ClientId, Direction, MonitorData, OVERVIEW_NAMESPACE, WorkspaceData,
++    WorkspaceId,
+ };
+ use gtk4_layer_shell::{Edge, KeyboardMode, Layer, LayerShell};
+ use regex::Regex;
+ use relm4::adw::prelude::*;
+-use relm4::adw::{gdk, gtk};
++use relm4::adw::{gdk, glib, gtk};
+ use relm4::factory::FactoryVecDeque;
+ use relm4::gtk::{Orientation, SelectionMode};
+ use relm4::{ComponentParts, ComponentSender, SimpleComponent};
+@@ -25,6 +26,9 @@
+     live_thumbnails: bool,
+     #[cfg(feature = "live_windows")]
+     live_thumbnails_icons: bool,
++    show_selector: bool,
++    panel_width: i32,
++    panel_height: i32,
+ }
+
+ #[derive(Debug)]
+@@ -52,6 +56,8 @@
+ pub enum OverviewWindowOutput {
+     Clicked(WorkspaceId),
+     ClickedC(ClientId),
++    Navigate(Direction),
++    Close(bool),
+ }
+
+ #[relm4::component(pub)]
+@@ -63,17 +69,27 @@
+     view! {
+         #[root]
+         gtk::ApplicationWindow {
+-            set_css_classes: &["window"],
++            set_css_classes: &["window", "overview-backdrop"],
+             set_default_size: (100, 100),
+-            #[local_ref]
+-            itemsw -> gtk::FlowBox {
+-                set_css_classes: &["monitor"],
+-                set_selection_mode: SelectionMode::None,
+-                set_orientation: Orientation::Horizontal,
+-                #[watch]
+-                set_max_children_per_line: u32::from(model.general.items_per_row),
+-                #[watch]
+-                set_min_children_per_line: u32::from(model.general.items_per_row),
++            gtk::CenterBox {
++                #[wrap(Some)]
++                set_center_widget = &gtk::ScrolledWindow {
++                    set_css_classes: &["monitor", "selector-panel"],
++                    set_hscrollbar_policy: gtk::PolicyType::Never,
++                    set_vscrollbar_policy: gtk::PolicyType::Automatic,
++                    set_kinetic_scrolling: false,
++                    set_width_request: model.panel_width,
++                    set_height_request: model.panel_height,
++                    #[watch]
++                    set_visible: model.show_selector,
++                    #[local_ref]
++                    itemsw -> gtk::FlowBox {
++                        set_selection_mode: SelectionMode::None,
++                        set_orientation: Orientation::Horizontal,
++                        set_max_children_per_line: 1,
++                        set_min_children_per_line: 1,
++                    }
++                }
+             }
+         }
+     }
+@@ -85,6 +101,10 @@
+     ) -> ComponentParts<Self> {
+         trace!("Initializing OverviewWindow");
+
++        if let Some(settings) = gtk::Settings::default() {
++            settings.set_gtk_enable_animations(false);
++        }
++
+         let items: FactoryVecDeque<Workspaces> = FactoryVecDeque::builder()
+             .launch(gtk::FlowBox::default())
+             .forward(sender.output_sender(), |msg| match msg {
+@@ -92,6 +112,7 @@
+                 WorkspacesOutput::ClickedC(id) => OverviewWindowOutput::ClickedC(id),
+             });
+
++        let geometry = init.gtk_monitor.geometry();
+         let model = Self {
+             general: init.general,
+             open: false,
+@@ -102,6 +123,9 @@
+             live_thumbnails: init.live_thumbnails,
+             #[cfg(feature = "live_windows")]
+             live_thumbnails_icons: init.live_thumbnails_icons,
++            show_selector: false,
++            panel_width: geometry.width() * 9 / 10,
++            panel_height: geometry.height() * 17 / 20,
+         };
+
+         let itemsw: gtk::FlowBox = model.items.widget().clone();
+@@ -113,8 +137,33 @@
+         window.set_namespace(Some(OVERVIEW_NAMESPACE));
+         window.set_layer(Layer::Top);
+         window.set_anchor(Edge::Top, true);
+-        window.set_keyboard_mode(KeyboardMode::Exclusive);
++        window.set_anchor(Edge::Bottom, true);
++        window.set_anchor(Edge::Left, true);
++        window.set_anchor(Edge::Right, true);
++        window.set_keyboard_mode(KeyboardMode::None);
+         window.set_monitor(Some(&init.gtk_monitor));
++
++        let key_controller = gtk::EventControllerKey::new();
++        key_controller.set_propagation_phase(gtk::PropagationPhase::Capture);
++        let output = sender.output_sender().clone();
++        key_controller.connect_key_pressed(move |_, key, _, _| {
++            let message = match key {
++                gdk::Key::Left => Some(OverviewWindowOutput::Navigate(Direction::Left)),
++                gdk::Key::Right => Some(OverviewWindowOutput::Navigate(Direction::Right)),
++                gdk::Key::Up => Some(OverviewWindowOutput::Navigate(Direction::Up)),
++                gdk::Key::Down => Some(OverviewWindowOutput::Navigate(Direction::Down)),
++                gdk::Key::Escape => Some(OverviewWindowOutput::Close(false)),
++                gdk::Key::Return | gdk::Key::KP_Enter => Some(OverviewWindowOutput::Close(true)),
++                _ => None,
++            };
++            if let Some(message) = message {
++                output.emit(message);
++                glib::Propagation::Stop
++            } else {
++                glib::Propagation::Proceed
++            }
++        });
++        window.add_controller(key_controller);
+         ComponentParts { model, widgets }
+     }
+
+@@ -124,12 +173,17 @@
+             OverviewWindowInput::SetGeneral(general) => {
+                 self.general = general;
+             }
+-            OverviewWindowInput::OpenOverview((data, top_offset)) => {
++            OverviewWindowInput::OpenOverview((data, _top_offset)) => {
+                 if self.open {
+                     trace!("already open");
+                 } else {
+                     self.open = true;
+-                    self.window.set_margin(Edge::Top, i32::from(top_offset));
++                    self.show_selector = data.show_selector;
++                    self.window.set_keyboard_mode(if self.show_selector {
++                        KeyboardMode::Exclusive
++                    } else {
++                        KeyboardMode::None
++                    });
+                     self.open_overview(&data);
+                 }
+             }
+@@ -143,6 +197,7 @@
+             OverviewWindowInput::CloseOverview => {
+                 if self.open {
+                     self.open = false;
++                    self.window.set_keyboard_mode(KeyboardMode::None);
+                     self.close_overview();
+                 } else {
+                     trace!("not open");
+@@ -150,6 +205,7 @@
+             }
+             OverviewWindowInput::ReloadOverview(data) => {
+                 if self.open {
++                    self.show_selector = data.show_selector;
+                     self.reload_overview(&data);
+                 } else {
+                     trace!("not open");
+@@ -172,8 +228,9 @@
+     fn open_overview(&mut self, data: &OverviewWindowData) {
+         trace!("Showing window {:?}", self.window.id());
+         self.window.set_visible(true);
+-        self.window.grab_focus();
+-
++        if self.show_selector {
++            self.window.grab_focus();
++        }
+         self.populate_workspace_mode(data, self.general.scale);
+     }
+
+@@ -267,4 +324,5 @@
+     pub clients: Vec<(ClientId, ClientData)>,
+     pub workspaces: Vec<(WorkspaceId, WorkspaceData)>,
+     pub monitor: MonitorData,
++    pub show_selector: bool,
+ }
+--- a/crates/windows-lib/src/shared/workspaces.rs
++++ b/crates/windows-lib/src/shared/workspaces.rs
+@@ -7,7 +7,7 @@
+ use relm4::adw::prelude::*;
+ use relm4::prelude::*;
+
+-/// Workspace items component - displays a workspace with its clients positioned inside
++/// A workspace row with clients ordered from left to right.
+ #[derive(Debug)]
+ pub struct Workspaces {
+     active: bool,
+@@ -60,22 +60,28 @@
+             gtk::Box {
+                 #[watch]
+                 set_css_classes: &workspace_css_classes(self.active, self.workspace_id),
+-                set_width_request: scale(self.monitor_data.width, self.scale),
+-                set_height_request: scale(self.monitor_data.height, self.scale),
+-                gtk::Frame {
+-                    #[wrap(Some)]
+-                    set_label_widget = &gtk::Button {
+-                        set_cursor_from_name: Some("pointer"),
+-                        set_width_request: scale(self.monitor_data.width, self.scale),
+-                        connect_clicked[sender, id = self.workspace_id] => move |_| sender.output_sender().emit(WorkspacesOutput::Clicked(id)),
+-                        gtk::Label {
+-                            set_label: &self.workspace_label(),
+-                        }
+-                    },
+-                    set_label_align: 0.5,
+-                    self.clients.widget() -> &gtk::Fixed {
+-                        set_width_request: scale(self.data.width, self.scale),
+-                        set_height_request: scale(self.data.height, self.scale),
++                set_orientation: gtk::Orientation::Horizontal,
++                set_spacing: 12,
++                set_margin_top: 6,
++                set_margin_bottom: 6,
++                gtk::Button {
++                    set_css_classes: &["workspace-label"],
++                    set_cursor_from_name: Some("pointer"),
++                    set_width_request: 92,
++                    connect_clicked[sender, id = self.workspace_id] => move |_| sender.output_sender().emit(WorkspacesOutput::Clicked(id)),
++                    gtk::Label {
++                        set_label: &self.workspace_label(),
++                    }
++                },
++                gtk::ScrolledWindow {
++                    set_hexpand: true,
++                    set_hscrollbar_policy: gtk::PolicyType::Automatic,
++                    set_vscrollbar_policy: gtk::PolicyType::Never,
++                    set_kinetic_scrolling: false,
++                    set_has_frame: false,
++                    self.clients.widget() -> &gtk::Box {
++                        set_orientation: gtk::Orientation::Horizontal,
++                        set_spacing: 8,
+                     }
+                 }
+             }
+@@ -84,30 +90,21 @@
+
+     fn init_model(init: Self::Init, _index: &DynamicIndex, sender: FactorySender<Self>) -> Self {
+         let mut clients: FactoryVecDeque<WorkspaceClients> = FactoryVecDeque::builder()
+-            .launch(gtk::Fixed::default())
++            .launch(gtk::Box::default())
+             .forward(sender.output_sender(), |msg| match msg {
+                 WorkspaceClientsOutput::Clicked(id) => WorkspacesOutput::ClickedC(id),
+             });
+
+-        // Populate clients - sort by floating status (floating windows on top)
++        // Clients are already sorted by workspace and screen position by the overview root.
+         {
+-            let mut sorted_clients: Vec<_> = init.clients.iter().collect();
+-            sorted_clients.sort_by(|(_, a), (_, b)| {
+-                // prefer smaller windows to be on top (for floating)
+-                if a.floating && b.floating {
+-                    (i32::from(b.width) * i32::from(b.height))
+-                        .cmp(&(i32::from(a.width) * i32::from(a.height)))
+-                } else {
+-                    a.floating.cmp(&b.floating)
+-                }
+-            });
+-
+             let mut guard = clients.guard();
+-            for (id, client) in sorted_clients {
++            for (id, client) in &init.clients {
+                 if client.enabled {
++                    let card_width = proportional_card_width(client.width, init.monitor_data.width);
+                     guard.push_back(WorkspaceClientsInit {
+                         id: *id,
+                         scale: init.scale,
++                        card_width,
+                         data: client.clone(),
+                         #[cfg(feature = "live_windows")]
+                         live_thumbnails: init.live_thumbnails,
+@@ -140,9 +137,18 @@
+             }
+             WorkspacesInput::SetActiveClient(id) => {
+                 self.active = false;
++                let mut selected = None;
+                 for (idx, item) in self.clients.iter().enumerate() {
+                     self.clients
+                         .send(idx, WorkspaceClientsInput::SetActive(id == item.id));
++                    if id == item.id {
++                        selected = Some(idx);
++                    }
++                }
++                if let Some(index) = selected
++                    && let Some(widget) = nth_child(self.clients.widget(), index)
++                {
++                    widget.grab_focus();
+                 }
+             }
+             #[cfg(feature = "live_windows")]
+@@ -159,6 +165,21 @@
+     }
+ }
+
++fn proportional_card_width(client_width: i16, monitor_width: u16) -> i32 {
++    let available_width = (i32::from(monitor_width) * 9 / 10 - 150).max(320);
++    let full_width_card = ((available_width - 24) / 4).max(80);
++    let ratio = f64::from(client_width.max(1)) / f64::from(monitor_width.max(1));
++    ((ratio * f64::from(full_width_card)).round() as i32).clamp(80, full_width_card)
++}
++
++fn nth_child(parent: &gtk::Box, index: usize) -> Option<gtk::Widget> {
++    let mut child = parent.first_child();
++    for _ in 0..index {
++        child = child.and_then(|widget| widget.next_sibling());
++    }
++    child
++}
++
+ impl Workspaces {
+     fn workspace_label(&self) -> String {
+         if self.data.name.trim().is_empty() {
+@@ -171,10 +192,6 @@
+     }
+ }
+
+-fn scale<T: Into<f64>>(value: T, scale: f64) -> i32 {
+-    (value.into() / (15f64 - scale)) as i32
+-}
+-
+ fn workspace_css_classes(active: bool, id: WorkspaceId) -> Vec<&'static str> {
+     let mut classes = vec!["workspace", "no-hover"];
+     if active {
+--- a/crates/windows-lib/src/shared/workspace_clients.rs
++++ b/crates/windows-lib/src/shared/workspace_clients.rs
+@@ -1,19 +1,17 @@
+-use crate::icon::set_icon;
+ use core_lib::{ClientData, ClientId};
+ use relm4::adw::gtk;
+ use relm4::adw::prelude::*;
+-use relm4::factory::Position;
+ use relm4::gtk::{Align, gdk, pango};
+ use relm4::prelude::*;
+
+-/// Workspace clients component for Fixed parent (workspace mode)
+-/// Shows clients positioned according to their window coordinates
++/// Fixed-size window card used by the workspace-row overview.
+ #[derive(Debug)]
+ pub struct WorkspaceClients {
+     active: bool,
+     pub data: ClientData,
+     pub id: ClientId,
+     pub scale: f64,
++    pub card_width: i32,
+     pub paintable: Option<gdk::Paintable>,
+     live_thumbnails: bool,
+     live_thumbnails_icons: bool,
+@@ -31,6 +29,7 @@
+     pub data: ClientData,
+     pub id: ClientId,
+     pub scale: f64,
++    pub card_width: i32,
+     #[cfg(feature = "live_windows")]
+     pub live_thumbnails: bool,
+     #[cfg(feature = "live_windows")]
+@@ -48,7 +47,7 @@
+     type Input = WorkspaceClientsInput;
+     type Output = WorkspaceClientsOutput;
+     type CommandOutput = ();
+-    type ParentWidget = gtk::Fixed;
++    type ParentWidget = gtk::Box;
+
+     view! {
+         #[root]
+@@ -56,44 +55,75 @@
+             #[watch]
+             set_css_classes: if self.active { &["active", "client"] } else { &["client"] },
+             set_cursor_from_name: Some("pointer"),
+-            set_width_request: scale(self.data.width, self.scale),
+-            set_height_request: scale(self.data.height, self.scale),
++            set_width_request: self.card_width,
++            set_size_request: (self.card_width, 250),
++            set_hexpand: false,
++            set_height_request: 250,
+             set_overflow: gtk::Overflow::Hidden,
++            set_tooltip_text: Some(&format!(
++                "{}\n{}\nPID {} · 0x{:x} · {} · monitor {} · workspace {}",
++                self.data.class,
++                self.data.title,
++                self.data.pid,
++                self.id,
++                if self.data.floating { "floating" } else { "tiled" },
++                self.data.monitor,
++                self.data.workspace,
++            )),
+             connect_clicked[sender, id = self.id] => move |_| sender.output_sender().emit(WorkspaceClientsOutput::Clicked(id)),
+-            gtk::Overlay {
+-                #[name(picture)]
+-                gtk::Picture {
+-                    set_content_fit: gtk::ContentFit::Fill,
+-                    set_halign: Align::Fill,
+-                    set_valign: Align::Fill,
+-                    #[watch]
+-                    set_paintable: self.paintable.as_ref(),
+-                    set_css_classes: if self.data.enabled { &["client-picture"] } else { &["client-picture", "monochrome"] },
+-                },
+-                add_overlay = &gtk::Frame {
+-                    set_label_align: 0.5,
+-                    set_halign: Align::Center,
+-                    set_valign: Align::Fill,
+-                    #[wrap(Some)]
+-                    set_label_widget = &gtk::Label {
+-                        set_overflow: gtk::Overflow::Visible,
+-                        set_margin_start: 6,
+-                        set_ellipsize: pango::EllipsizeMode::End,
+-                        set_label: if self.data.title.trim().is_empty() {
+-                            &self.data.class
+-                        } else {
+-                            &self.data.title
+-                        },
+-                    },
+-                    #[name(image)]
+-                    gtk::Image {
+-                        set_css_classes: if self.live_thumbnails && self.live_thumbnails_icons {
+-                            if self.data.enabled { &["client-image-layered"] } else { &["client-image-layered", "monochrome"] }
+-                        } else {
+-                            if self.data.enabled { &["client-image"] } else { &["client-image", "monochrome"] }
+-                        },
+-                        set_pixel_size: calc_image_size(self.data.height, self.data.width, self.scale),
++            gtk::Box {
++                set_orientation: gtk::Orientation::Vertical,
++                set_spacing: 5,
++                gtk::Overlay {
++                    set_height_request: 164,
++                    #[name(picture)]
++                    gtk::Picture {
++                        set_content_fit: gtk::ContentFit::Contain,
++                        set_can_shrink: true,
++                        set_halign: Align::Fill,
++                        set_valign: Align::Fill,
++                        #[watch]
++                        set_paintable: self.paintable.as_ref(),
++                        set_css_classes: if self.data.enabled { &["client-picture"] } else { &["client-picture", "monochrome"] },
+                     }
++                },
++                gtk::Label {
++                    set_css_classes: &["client-title"],
++                    set_xalign: 0.0,
++                    set_margin_start: 8,
++                    set_margin_end: 8,
++                    set_single_line_mode: true,
++                    set_max_width_chars: 1,
++                    set_ellipsize: pango::EllipsizeMode::End,
++                    set_label: if self.data.title.trim().is_empty() { &self.data.class } else { &self.data.title },
++                },
++                gtk::Label {
++                    set_css_classes: &["client-app"],
++                    set_xalign: 0.0,
++                    set_margin_start: 8,
++                    set_margin_end: 8,
++                    set_single_line_mode: true,
++                    set_max_width_chars: 1,
++                    set_ellipsize: pango::EllipsizeMode::End,
++                    set_label: &self.data.class,
++                },
++                gtk::Label {
++                    set_css_classes: &["client-meta"],
++                    set_xalign: 0.0,
++                    set_margin_start: 8,
++                    set_margin_end: 8,
++                    set_margin_bottom: 7,
++                    set_single_line_mode: true,
++                    set_max_width_chars: 1,
++                    set_ellipsize: pango::EllipsizeMode::End,
++                    set_label: &format!(
++                        "pid {} · 0x{:x} · {} · m{} · ws{}",
++                        self.data.pid,
++                        self.id,
++                        if self.data.floating { "float" } else { "tile" },
++                        self.data.monitor,
++                        self.data.workspace,
++                    ),
+                 }
+             }
+         }
+@@ -106,6 +136,7 @@
+             data: init.data,
+             id: init.id,
+             scale: init.scale,
++            card_width: init.card_width,
+             paintable: None,
+             #[cfg(feature = "live_windows")]
+             live_thumbnails: init.live_thumbnails,
+@@ -118,25 +149,6 @@
+         }
+     }
+
+-    fn init_widgets(
+-        &mut self,
+-        _index: &DynamicIndex,
+-        root: Self::Root,
+-        _returned_widget: &<Self::ParentWidget as relm4::factory::FactoryView>::ReturnedWidget,
+-        sender: FactorySender<Self>,
+-    ) -> Self::Widgets {
+-        let widgets = view_output!();
+-        if !self.live_thumbnails || self.live_thumbnails_icons {
+-            // Set the icon for this client (only if large enough to show)
+-            let client_h_w =
+-                scale(self.data.height, self.scale).min(scale(self.data.width, self.scale));
+-            if client_h_w > 70 {
+-                set_icon(&self.data.class, self.data.pid, &widgets.image);
+-            }
+-        }
+-        widgets
+-    }
+-
+     fn update(&mut self, message: Self::Input, _sender: FactorySender<Self>) {
+         match message {
+             WorkspaceClientsInput::SetActive(active) => {
+@@ -149,25 +161,3 @@
+         }
+     }
+ }
+-
+-impl Position<(f64, f64), DynamicIndex> for WorkspaceClients {
+-    fn position(&self, _index: &DynamicIndex) -> (f64, f64) {
+-        (
+-            f64::from(scale(self.data.x, self.scale)),
+-            f64::from(scale(self.data.y, self.scale)),
+-        )
+-    }
+-}
+-
+-fn scale<T: Into<f64>>(value: T, scale: f64) -> i32 {
+-    (value.into() / (15f64 - scale)) as i32
+-}
+-
+-fn calc_image_size(height: i16, width: i16, scale_val: f64) -> i32 {
+-    let client_h_w = scale(height, scale_val).min(scale(width, scale_val));
+-    if client_h_w > 70 {
+-        (f64::from(client_h_w.clamp(50, 600)) / 1.6) as i32 - 20
+-    } else {
+-        0 // Hide image for very small clients
+-    }
+-}
+--- a/crates/launcher-lib/src/root.rs
++++ b/crates/launcher-lib/src/root.rs
+@@ -269,7 +269,7 @@
+         self.data.parent_text = None;
+         self.data.parent_cursor = None;
+         self.data.active_results.clear();
+-        self.switching = false;
++        self.switching = true;
+     }
+
+     fn load_static_items(&mut self) {
+@@ -307,6 +307,12 @@
+             let text_empty = entry.text().is_empty();
+             handle_key(&launcher, text_empty, key, modt, &plugin_keys, &sender_2)
+         });
++        let sender_3 = sender.clone();
++        event_controller.connect_key_released(move |_, key, _, _| {
++            if matches!(key, gdk::Key::Super_L | gdk::Key::Super_R) {
++                sender_3.input_sender().emit(LauncherRootInput::Escape);
++            }
++        });
+         if let Some(controller) = self.ui.controller.take() {
+             self.ui.entry.remove_controller(&controller);
+         }
+@@ -427,12 +433,7 @@
+             sender.input_sender().emit(LauncherRootInput::Escape);
+             glib::Propagation::Stop
+         }
+-        (_, _, gdk::Key::Tab) => {
+-            sender
+-                .input_sender()
+-                .emit(LauncherRootInput::Switch(Direction::Right, false));
+-            glib::Propagation::Stop
+-        }
++        (_, _, gdk::Key::Tab) => glib::Propagation::Stop,
+         (_, _, gdk::Key::ISO_Left_Tab | gdk::Key::grave | gdk::Key::dead_grave) => {
+             sender
+                 .input_sender()
+@@ -442,13 +443,13 @@
+         (true, _, gdk::Key::h) => {
+             sender
+                 .input_sender()
+-                .emit(LauncherRootInput::Switch(Direction::Left, true));
++                .emit(LauncherRootInput::Switch(Direction::Left, false));
+             glib::Propagation::Stop
+         }
+         (true, _, gdk::Key::l) => {
+             sender
+                 .input_sender()
+-                .emit(LauncherRootInput::Switch(Direction::Right, true));
++                .emit(LauncherRootInput::Switch(Direction::Right, false));
+             glib::Propagation::Stop
+         }
+         (_, _, gdk::Key::Left) => {
+@@ -458,7 +459,7 @@
+             }
+             sender
+                 .input_sender()
+-                .emit(LauncherRootInput::Switch(Direction::Left, true));
++                .emit(LauncherRootInput::Switch(Direction::Left, false));
+             glib::Propagation::Stop
+         }
+         (_, _, gdk::Key::Right) => {
+@@ -468,19 +469,19 @@
+             }
+             sender
+                 .input_sender()
+-                .emit(LauncherRootInput::Switch(Direction::Right, true));
++                .emit(LauncherRootInput::Switch(Direction::Right, false));
+             glib::Propagation::Stop
+         }
+         (_, _, gdk::Key::Up) | (true, _, gdk::Key::k) => {
+             sender
+                 .input_sender()
+-                .emit(LauncherRootInput::Switch(Direction::Up, true));
++                .emit(LauncherRootInput::Switch(Direction::Up, false));
+             glib::Propagation::Stop
+         }
+         (_, _, gdk::Key::Down) | (true, _, gdk::Key::j) => {
+             sender
+                 .input_sender()
+-                .emit(LauncherRootInput::Switch(Direction::Down, true));
++                .emit(LauncherRootInput::Switch(Direction::Down, false));
+             glib::Propagation::Stop
+         }
+         (_, false, gdk::Key::Return) => {

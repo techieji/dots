@@ -105,6 +105,7 @@ hl.layer_rule({ name = "swaync-control", match = { namespace = "swaync-control-c
 hl.layer_rule({ name = "swaync-notification", match = { namespace = "swaync-notification-window" }, animation = "slide right", blur = true, ignore_alpha = 0.0 })
 hl.layer_rule({ name = "avizo", match = { namespace = "avizo" }, blur = true, ignore_alpha = 0.0 })
 hl.layer_rule({ name = "vicinae", match = { namespace = "vicinae" }, blur = true, ignore_alpha = 0.0 })
+hl.layer_rule({ name = "hyprshell", match = { namespace = "hyprshell.*" }, blur = true, ignore_alpha = 0.0 })
 
 -- Bindings ---------------
 

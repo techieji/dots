@@ -139,6 +139,9 @@
   color: @theme_fg_secondary;
   margin-left: 12px;
 }
+.control-center .notification-content {
+  padding-right: 32px;
+}
 .control-center .close-button {
   background-color: @close_button_bg;
   border-radius: 50%;
@@ -149,17 +152,18 @@
 .control-center .close-button:hover {
   background-color: @close_button_hover_bg;
 }
-.control-center .close-button image {
-    margin-right: 12px; /* Adjust this value for desired spacing */
-  color: @icon_secondary;
-}
-
 .control-center .notification image {
   margin-right: 12px; /* Space between image and text */
   min-width: 36px;    /* Define a minimum width */
   min-height: 36px;   /* Define a minimum height */
   /* Add or adjust the border-radius property here */
   border-radius: 8px; /* <<< THIS LINE controls the rounding */
+}
+.control-center .close-button image {
+  color: @icon_secondary;
+  margin: 0;
+  min-width: 0;
+  min-height: 0;
 }
 /* ── 8. Floating Notifications ─────────────────────────────────── */
 .floating-notifications .notification-row {
@@ -188,6 +192,9 @@
   color: @icon_secondary;
   margin-left: 10px;
 }
+.floating-notifications .notification-content {
+  padding-right: 36px;
+}
 .floating-notifications .notification image {
   min-width: 48px;
   min-height: 48px;
@@ -205,8 +212,10 @@
   background-color: @close_button_hover_bg;
 }
 .floating-notifications .close-button image {
-    margin-right: 12px; /* Adjust this value for desired spacing */
   color: @icon_secondary;
+  margin: 0;
+  min-width: 0;
+  min-height: 0;
 }
 .floating-notifications .notification-alt-actions {
   margin-top: 16px;

@@ -25,8 +25,7 @@ On this last one, important notes:
    [waybar](https://github.com/Alexays/Waybar) (taskbar) and
    [hyprpaper](https://wiki.hypr.land/Hypr-Ecosystem/hyprpaper/).
    [hyprlock](https://wiki.hypr.land/Hypr-Ecosystem/hyprlock/) for the lockscreen,
-   [TheDot](https://www.gnome-look.org/p/1244392) for the cursor (converted to
-   [hyprcursor](https://wiki.hypr.land/Hypr-Ecosystem/hyprcursor/)). A custom
+   [TheDot](https://www.gnome-look.org/p/1244392) for the cursor. A custom
    [Iosevka](https://typeof.net/Iosevka/) font patched with
    [Nerd Fonts](https://github.com/ryanoasis/nerd-fonts#font-patcher).
  - Terminal:
@@ -50,7 +49,6 @@ On this last one, important notes:
    [swaync](https://github.com/ErikReider/SwayNotificationCenter#configuring) for notification manager, 
    [avizo](https://github.com/heyjuvi/avizo) for brightness, audio, and mic popups.
  - Misc:
-   [weylus](https://github.com/H-M-H/Weylus) for remote tablet support.
    [hyprsunset](https://wiki.hypr.land/Hypr-Ecosystem/hyprsunset/) combined with a custom systemd service to match outdoor light.
    [onedrive](https://github.com/abraunegg/onedrive) sync capability (command line only).
    [stylix](https://github.com/nix-community/stylix) for theming.
@@ -61,12 +59,11 @@ On this last one, important notes:
  - `nh os test .` for quick changes that don't need to be persisted
  - `nh os boot .` when doing something with the filesystem this is booting off of.
 
-New to coding agents? See [Getting started with agentic coding](docs/agentic-coding.md)
-for a short, experience-focused guide to the included tools.
+There's codex too, which prepared [Getting started with agentic coding](docs/agentic-coding.md).
 
 ## Persistence notes
 
-(TODO) `persistence.toml` contains the directories that each app needs to be persisted. Here is a good way to determine this for userspace apps:
+Here is a good way to determine what directories should be persisted for userspace apps:
  - `$XDG_CONFIG_HOME` (`~/.config`) should only be written by home-manager.
  - `$XDG_CACHE_HOME` (`~/.cache`) shouldn't be persisted.
  - `$XDG_DATA_HOME` (`~/.local/share`) *should* be persisted.
@@ -87,9 +84,6 @@ to switch to persisting all app config if need be).
 
 Impurities:
  - Networking configurations are persisted instead of being in `configuration.nix`.
-
-Future improvements:
- - Fix hyprcursor!
 
 Adaptation notes:
  - My name and email is used in configuring git (`home.nix`).

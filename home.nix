@@ -12,6 +12,30 @@ let
   '';
   iosevkaRadon = pkgs.iosevka.override { set = "Radon"; privateBuildPlan = builtins.readFile ./config/iosevka-radon.toml; };
   background = "${./resources/backgrounds/nightscape.png}";
+  hyprshellPackage = let
+    craneLib = inputs.hyprshell.inputs.crane.mkLib pkgs;
+    buildLib = import "${inputs.hyprshell}/nix/build.nix" { inherit craneLib pkgs; };
+    commonArgs = buildLib.commonArgs // {
+      version = "4.11.0-alpha.1";
+      buildInputs = buildLib.commonArgs.buildInputs ++ [ pkgs.dbus pkgs.libgbm ];
+      cargoExtraArgs = "";
+    };
+    cargoArtifacts = craneLib.buildDepsOnly (commonArgs // {
+      src = craneLib.cleanCargoSource inputs.hyprshell;
+    });
+  in craneLib.buildPackage (commonArgs // {
+    inherit cargoArtifacts;
+    patches = [ ./patches/hyprshell-workspace-grid.patch ];
+    patchFlags = [ "-p1" ];
+    postInstall = ''
+      install -Dm644 packaging/hyprshell-settings.desktop \
+        $out/share/applications/hyprshell-settings.desktop
+      install -Dm644 packaging/hyprshell-settings.png \
+        $out/share/pixmaps/hyprshell-settings.png
+      mkdir -p $out/share/hyprshell
+      cp -r packaging/share/. $out/share/hyprshell/
+    '';
+  });
 
   xdg = {
     dataHome = ".local/share";
@@ -21,6 +45,7 @@ in {
   imports = [
     "${inputs.impermanence}/home-manager.nix"
     inputs.direnv-instant.homeModules.direnv-instant
+    inputs.hyprshell.homeModules.default
     ./config/codex
     ./config/avizo.nix
   ];
@@ -46,6 +71,7 @@ in {
     speedcrunch
     libreoffice-qt
     pass
+    signal-desktop
     ( iosevkaRadon.overrideAttrs (old: {
       nativeBuildInputs = (old.nativeBuildInputs or []) ++ [ pkgs.nerd-font-patcher ];
       postInstall = (old.postInstall or "") + ''
@@ -177,6 +203,46 @@ in {
       hide-cursor = true; text-cursor = false; history = true;
     };
   };
+
+  programs.hyprshell = {
+    enable = true;
+    package = hyprshellPackage;
+    systemd.enable = true;
+    styleFile = import ./config/hyprshell-style.css {
+      c = config.lib.stylix.colors.withHashtag;
+    };
+    settings.windows = {
+      enable = true;
+      scale = 4.5;
+      items_per_row = 4;
+      overview = {
+        enable = true;
+        key = "Tab";
+        modifier = "super";
+        filter_by = [ ];
+        exclude_workspaces = "special:.*";
+        top_offset = 0;
+        launcher = {
+          show_when_empty = false;
+          plugins = {
+            applications.enable = false;
+            calc.enable = false;
+            shell.enable = false;
+            terminal.enable = false;
+            websearch.enable = false;
+            path.enable = false;
+            actions.enable = false;
+          };
+        };
+      };
+      switch.enable = false;
+      switch_2.enable = false;
+    };
+  };
+
+  systemd.user.services.hyprshell.Service.Environment = [
+    "HYPRSHELL_EXPERIMENTAL=1"
+  ];
  
   programs.bottom.enable = true;
 
@@ -213,15 +279,6 @@ in {
         { identity = true; }
       ];
     };
-  };
-
-  systemd.user.services.sun = {
-    Unit = {
-      Description = "Automatically update screen color to match the outdoors";
-      Requires = [ "hyprsunset.service" ];
-    };
-    Install.WantedBy = [ "default.target" ];
-    Service.ExecStart = "${./scripts/sun.py} ${pkgs.hyprland}/bin/hyprctl";
   };
  
   stylix.targets.hyprlock.enable = false;

@@ -20,9 +20,22 @@ let
         "$@"
     '';
   };
+  academicCollector = inputs.task-unifier.packages.${system}.default;
+  academicProjectDir = "${config.home.homeDirectory}/Documents/projects/jobs";
+  academicSync = pkgs.writeShellApplication {
+    name = "academic-sync";
+    runtimeInputs = [ academicCollector playwrightHeliumMcp ];
+    text = ''
+      export TASK_UNIFIER_PROJECT_DIR=${academicProjectDir}
+      export TASK_UNIFIER_RUNTIME_DIR=${academicProjectDir}/runtime
+      export TASK_UNIFIER_HELIUM_BIN=${lib.getExe heliumPackage}
+      academic-browser-collect
+      task-unifier --config ${academicProjectDir}/config.toml run
+    '';
+  };
 in {
   home.packages = [
-    harness playwrightHeliumMcp pkgs.codex pkgs.bubblewrap pkgs.sqlite pkgs.jq pkgs.libnotify pkgs.repomix pkgs.nixd serenaPackage
+    harness playwrightHeliumMcp academicCollector pkgs.codex pkgs.bubblewrap pkgs.sqlite pkgs.jq pkgs.libnotify pkgs.repomix pkgs.nixd serenaPackage
     (pkgs.writeShellScriptBin "codex-semantic" ''
       exec ${lib.getExe serenaPackage} "$@"
     '')
@@ -57,6 +70,19 @@ in {
   };
   systemd.user.timers.codex-harness-maintenance = {
     Unit.Description = "Daily Codex harness maintenance";
+    Timer = { OnCalendar = "daily"; Persistent = true; RandomizedDelaySec = "15m"; };
+    Install.WantedBy = [ "timers.target" ];
+  };
+  systemd.user.services.academic-sync = {
+    Unit.Description = "Collect Canvas and Gradescope assignments";
+    Service = {
+      Type = "oneshot";
+      ExecStart = "${academicSync}/bin/academic-sync";
+      RuntimeMaxSec = "2h";
+    };
+  };
+  systemd.user.timers.academic-sync = {
+    Unit.Description = "Collect Canvas and Gradescope assignments daily";
     Timer = { OnCalendar = "daily"; Persistent = true; RandomizedDelaySec = "15m"; };
     Install.WantedBy = [ "timers.target" ];
   };

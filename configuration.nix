@@ -86,7 +86,7 @@ in {
   fileSystems."/persist" = {
     device = "/dev/disk/by-uuid/3d3f9482-968e-46a2-b464-637b97a82845";
     fsType = "btrfs";
-    options = [ "subvol=@persist" "compress=zstd" ];
+    options = [ "subvol=@persist" "compress=zstd" "user_subvol_rm_allowed" ];
     neededForBoot = true;
   };
 

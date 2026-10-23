@@ -1,0 +1,174 @@
+{ c }: ''
+:root {
+  --text-color: ${c.base05};
+  --bg-color: alpha(${c.base01}, 0.82);
+  --bg-color-hover: alpha(${c.base02}, 0.90);
+  --bg-window-color: alpha(${c.base00}, 0.72);
+  --border-color: alpha(${c.base07}, 0.18);
+  --border-color-active: ${c.base0C};
+  --border-size: 1px;
+  --border-style: solid;
+  --border-radius: 0px;
+  --window-padding: 12px;
+}
+
+* {
+  font-family: "IosevkaRn Nerd Font", monospace;
+  border-radius: 0;
+  box-shadow: none;
+  text-shadow: none;
+  transition: none;
+}
+
+.window {
+  background: transparent;
+}
+
+.overview-backdrop {
+  background: alpha(${c.base00}, 0.16);
+}
+
+.selector-panel {
+  padding: 20px;
+  background: alpha(${c.base00}, 0.86);
+  border: 0;
+}
+
+.monitor,
+.workspace,
+.client {
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.monitor {
+  padding: 18px;
+  background: alpha(${c.base00}, 0.86);
+  border: 0;
+}
+
+.workspace {
+  padding: 6px;
+  background: alpha(${c.base01}, 0.42);
+  border: 0;
+}
+
+.workspace-label {
+  min-width: 92px;
+  font-size: 24px;
+  font-weight: 600;
+  color: ${c.base0C};
+  background: alpha(${c.base01}, 0.90);
+  border: 0;
+}
+
+.client {
+  padding: 0;
+  min-width: 320px;
+  min-height: 250px;
+  font-size: 15px;
+  font-weight: normal;
+  color: ${c.base05};
+  background: alpha(${c.base01}, 0.82);
+  border: 0;
+}
+
+.client:hover {
+  background: alpha(${c.base02}, 0.90);
+}
+
+.workspace.active {
+  background: alpha(${c.base03}, 0.92);
+  border: 0;
+}
+
+.client.active {
+  background: alpha(${c.base03}, 0.92);
+  border: 1px solid ${c.base0C};
+}
+
+.client-image {
+  margin: 0 0 8px 0;
+  border-radius: 0;
+}
+
+.client-picture {
+  min-height: 164px;
+  background: alpha(${c.base00}, 0.55);
+  border: 0;
+}
+
+.client-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: ${c.base05};
+}
+
+.client-app {
+  color: ${c.base0C};
+}
+
+.client-meta {
+  font-size: 12px;
+  color: ${c.base04};
+}
+
+.launcher {
+  opacity: 0;
+  min-width: 1px;
+  min-height: 1px;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+
+scrollbar,
+scrollbar.horizontal,
+scrollbar.vertical {
+  min-width: 2px;
+  min-height: 2px;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+scrollbar slider {
+  min-width: 2px;
+  min-height: 2px;
+  padding: 0;
+  margin: 0;
+  background: alpha(${c.base04}, 0.55);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+scrollbar trough {
+  min-width: 2px;
+  min-height: 2px;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+scrollbar button {
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+tooltip {
+  padding: 6px;
+  color: ${c.base05};
+  background: alpha(${c.base01}, 0.95);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+''
