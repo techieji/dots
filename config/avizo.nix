@@ -1,17 +1,18 @@
-{ config, lib, pkgs, ... }:
+{ config, inputs, lib, pkgs, system, ... }:
 let
   cfg = config.services.avizoContrast;
+  hyprlandPackage = inputs.hyprland.packages.${system}.hyprland;
 
   controller = pkgs.writeShellApplication {
     name = "avizo-contrast";
-    runtimeInputs = with pkgs; [
-      avizo
-      gawk
-      grim
-      hyprland
-      jq
-      netpbm
-      pipewire
+    runtimeInputs = [
+      pkgs.avizo
+      pkgs.gawk
+      pkgs.grim
+      hyprlandPackage
+      pkgs.jq
+      pkgs.netpbm
+      pkgs.pipewire
     ];
     text = ''
       set -euo pipefail

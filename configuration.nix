@@ -154,7 +154,13 @@ in {
 
   services.upower.enable = true;
 
-  programs.hyprland = { enable = true; withUWSM = true; xwayland.enable = true; };
+  programs.hyprland = {
+    enable = true;
+    package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
+    portalPackage = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
+    withUWSM = true;
+    xwayland.enable = true;
+  };
 
   services.onedrive.enable = true;
   
@@ -162,7 +168,7 @@ in {
 
   xdg.portal = {
     enable = true;
-    extraPortals = [ pkgs.xdg-desktop-portal-hyprland ];
+    extraPortals = [ inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland ];
     config.hyprland.default = [ "hyprland" "gtk" ];
   };
 

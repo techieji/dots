@@ -1,14 +1,14 @@
 { c }: ''
 :root {
   --text-color: ${c.base05};
-  --bg-color: alpha(${c.base01}, 0.82);
-  --bg-color-hover: alpha(${c.base02}, 0.90);
-  --bg-window-color: alpha(${c.base00}, 0.72);
+  --bg-color: alpha(${c.base01}, 0.70);
+  --bg-color-hover: alpha(${c.base02}, 0.78);
+  --bg-window-color: alpha(${c.base00}, 0.68);
   --border-color: alpha(${c.base07}, 0.18);
   --border-color-active: ${c.base0C};
   --border-size: 1px;
   --border-style: solid;
-  --border-radius: 0px;
+  --border-radius: 6px;
   --window-padding: 12px;
 }
 
@@ -30,26 +30,26 @@
 
 .selector-panel {
   padding: 20px;
-  background: alpha(${c.base00}, 0.86);
+  background: alpha(${c.base00}, 0.68);
   border: 0;
 }
 
 .monitor,
 .workspace,
 .client {
-  border-radius: 0;
+  border-radius: 6px;
   box-shadow: none;
 }
 
 .monitor {
   padding: 18px;
-  background: alpha(${c.base00}, 0.86);
+  background: alpha(${c.base00}, 0.68);
   border: 0;
 }
 
 .workspace {
   padding: 6px;
-  background: alpha(${c.base01}, 0.42);
+  background: alpha(${c.base01}, 0.38);
   border: 0;
 }
 
@@ -58,7 +58,7 @@
   font-size: 24px;
   font-weight: 600;
   color: ${c.base0C};
-  background: alpha(${c.base01}, 0.90);
+  background: alpha(${c.base01}, 0.72);
   border: 0;
 }
 
@@ -69,27 +69,27 @@
   font-size: 15px;
   font-weight: normal;
   color: ${c.base05};
-  background: alpha(${c.base01}, 0.82);
+  background: alpha(${c.base01}, 0.70);
   border: 0;
 }
 
 .client:hover {
-  background: alpha(${c.base02}, 0.90);
+  background: alpha(${c.base02}, 0.78);
 }
 
 .workspace.active {
-  background: alpha(${c.base03}, 0.92);
+  background: alpha(${c.base03}, 0.76);
   border: 0;
 }
 
 .client.active {
-  background: alpha(${c.base03}, 0.92);
+  background: alpha(${c.base03}, 0.82);
   border: 1px solid ${c.base0C};
 }
 
 .client-image {
   margin: 0 0 8px 0;
-  border-radius: 0;
+  border-radius: 6px;
 }
 
 .client-picture {
@@ -168,7 +168,7 @@ tooltip {
   color: ${c.base05};
   background: alpha(${c.base01}, 0.95);
   border: 0;
-  border-radius: 0;
+  border-radius: 6px;
   box-shadow: none;
 }
 ''

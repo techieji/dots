@@ -7,7 +7,8 @@
 }
 
 window#waybar {
-  background-color: @base00;
+  background-color: alpha(@base00, 0.60);
+  border-right: 1px solid alpha(@base07, 0.10);
   color: @base05;
 }
 
@@ -54,12 +55,13 @@ window#waybar {
 }
 
 #workspaces button:hover {
-  background-color: @base02;
+  background-color: alpha(@base02, 0.62);
 }
 
 tooltip {
-  background-color: @base01;
-  border: 1px solid @base02;
+  background-color: alpha(@base01, 0.88);
+  border: 1px solid alpha(@base07, 0.12);
+  border-radius: 6px;
 }
 
 tooltip * {

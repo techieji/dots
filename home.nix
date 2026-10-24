@@ -113,6 +113,8 @@ in {
       notify_on_cmd_finish = "invisible 20";
       initial_window_width = "100c";
       initial_window_height = "100c";
+      background_opacity = lib.mkForce "0.90";
+      dynamic_background_opacity = false;
     };
   };
 
@@ -290,6 +292,7 @@ in {
         monitor = "";
         path = background;
         blur_passes = 3;
+        blur_size = 8;
         contrast = 0.8916;
         brightness = 0.8172;
         vibrancy = 0.1696;
@@ -347,7 +350,15 @@ in {
 
   services.poweralertd.enable = true;
  
-  programs.vicinae = { enable = true; systemd.enable = true; };      # App launcher
+  programs.vicinae = {
+    enable = true;
+    systemd.enable = true;
+    settings.launcher_window = {
+      opacity = lib.mkForce 0.90;
+      rounding = 8;
+      material = "none";
+    };
+  };      # App launcher
 
   stylix.targets.waybar.addCss = false;
   programs.waybar = {

@@ -14,6 +14,7 @@
     direnv-instant = { url = "github:Mic92/direnv-instant"; inputs.nixpkgs.follows = "nixpkgs"; };
     serena = { url = "github:oraios/serena"; inputs.nixpkgs.follows = "nixpkgs"; };
     task-unifier = { url = "path:/home/prajasekar/Documents/projects/jobs"; inputs.nixpkgs.follows = "nixpkgs"; };
+    hyprland = { url = "github:hyprwm/Hyprland/v0.56.2"; inputs.nixpkgs.follows = "nixpkgs"; };
     hyprshell = { url = "github:H3rmt/hyprshell/v4.11.0-alpha.1"; inputs.nixpkgs.follows = "nixpkgs"; };
   };
 
