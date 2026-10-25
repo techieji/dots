@@ -18,15 +18,21 @@
     hyprshell = { url = "github:H3rmt/hyprshell/v4.11.0-alpha.1"; inputs.nixpkgs.follows = "nixpkgs"; };
   };
 
-  outputs = { self, nixpkgs, home-manager, stylix, ... }@inputs: {
+  outputs = { self, nixpkgs, home-manager, stylix, ... }@inputs:
+  let
+    system = "x86_64-linux";
+    hyprlandPackage = inputs.hyprland.packages.${system}.hyprland.overrideAttrs (old: {
+      patches = (old.patches or []) ++ [ ./patches/hyprland-workspace-motion-blur.patch ];
+    });
+  in {
     nixosConfigurations.pradtop = nixpkgs.lib.nixosSystem {
-      specialArgs = { inherit inputs; };
+      specialArgs = { inherit inputs hyprlandPackage; };
       modules = [
         ./configuration.nix
         home-manager.nixosModules.home-manager {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
-          home-manager.extraSpecialArgs = { inherit inputs; system = "x86_64-linux"; };
+          home-manager.extraSpecialArgs = { inherit inputs hyprlandPackage system; };
           home-manager.backupFileExtension = "bak";
           home-manager.users.prajasekar = ./home.nix;
         }

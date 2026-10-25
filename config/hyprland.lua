@@ -1,4 +1,4 @@
-{ pkgs, pabc, helium, ... }: ''
+{ pkgs, pabc, helium, dotsLock, ... }: ''
 ----- HYPRLAND CONFIG ------------
 
 -- Monitors ----------------
@@ -31,11 +31,12 @@ local terminal = "${pkgs.kitty}/bin/kitty"
 local menu = "${pkgs.vicinae}/bin/vicinae open"
 local browser = "${helium}/bin/helium"
 local reader = "${pkgs.zathura}/bin/zathura"
+local lockscreen = "${dotsLock}/bin/dots-lock"
 
 -- Autostart ---------------
 
 ---- To avoid using a login manager
-hl.on("hyprland.start", function() hl.exec_cmd("hyprlock") end)
+hl.on("hyprland.start", function() hl.exec_cmd(lockscreen) end)
 
 -- All config --------------
 
@@ -82,7 +83,7 @@ hl.config({
         }
     },
     animations = {
-        enabled = false
+        enabled = true
     },
     -- Input ----------------
     input = {
@@ -138,8 +139,8 @@ hl.bind(mainMod .. "SHIFT + down", hl.dsp.layout("expel"))
 hl.bind(mainMod .. "SHIFT + up", hl.dsp.layout("consume"))
 hl.bind(mainMod .. "EQUAL", hl.dsp.layout("colresize +conf"))
 hl.bind(mainMod .. "MINUS", hl.dsp.layout("colresize -conf"))
-hl.bind(mainMod .. "L", hl.dsp.exec_cmd("$hyprlock"))
-hl.bind("switch:on:Lid Switch", hl.dsp.exec_cmd("hyprlock & sleep 1 && systemctl suspend"))
+hl.bind(mainMod .. "L", hl.dsp.exec_cmd(lockscreen))
+hl.bind("switch:on:Lid Switch", hl.dsp.exec_cmd(lockscreen .. " --suspend"))
 hl.bind(mainMod .. "P", hl.dsp.exec_cmd("${../scripts/password.sh}"))
 hl.bind(mainMod .. "N", hl.dsp.exec_cmd("swaync-client -t -sw"))         -- TODO use pkgs
 
@@ -170,13 +171,13 @@ hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
 
 -- Hotkeys ----------------
 
-hl.bind("XF86AudioMute", hl.dsp.exec_cmd("avizo-contrast volume sink toggle-mute"))
-hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("avizo-contrast volume sink down"))
-hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("avizo-contrast volume sink up"))
-hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd("avizo-contrast volume source toggle-mute"))
+hl.bind("XF86AudioMute", hl.dsp.exec_cmd("avizo-contrast volume sink toggle-mute"), { locked = true })
+hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("avizo-contrast volume sink down"), { locked = true, repeating = true })
+hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("avizo-contrast volume sink up"), { locked = true, repeating = true })
+hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd("avizo-contrast volume source toggle-mute"), { locked = true })
 
-hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("avizo-contrast brightness -5"))
-hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("avizo-contrast brightness +5"))
+hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("avizo-contrast brightness -5"), { locked = true, repeating = true })
+hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("avizo-contrast brightness +5"), { locked = true, repeating = true })
 
 hl.bind("XF86Calculator", hl.dsp.exec_cmd("${pkgs.speedcrunch}/bin/speedcrunch", { float = true, opacity = "0.9" }))
 hl.bind("XF86KbdLightOnOff", hl.dsp.exec_cmd("${../scripts/toggle-keyboard.nu}"))
@@ -190,4 +191,17 @@ hl.gesture({
     action = "scroll_move",
     scale = 1
 })
+
+-- Short, restrained window transitions keep motion blur from ending abruptly.
+hl.curve("windowEase", { type = "bezier", points = { {0.22, 1}, {0.36, 1} } })
+
+hl.animation({ leaf = "global", enabled = false, speed = 1, bezier = "windowEase" })
+hl.animation({ leaf = "windows", enabled = true, speed = 2.2, bezier = "windowEase" })
+hl.animation({ leaf = "windowsIn", enabled = true, speed = 2.2, bezier = "windowEase", style = "popin 96%" })
+hl.animation({ leaf = "windowsOut", enabled = true, speed = 1.6, bezier = "windowEase", style = "popin 96%" })
+hl.animation({ leaf = "windowsMove", enabled = true, speed = 2.2, bezier = "windowEase" })
+hl.animation({ leaf = "workspaces", enabled = true, speed = 2.2, bezier = "windowEase", style = "slidevert" })
+hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 2.2, bezier = "windowEase", style = "fade" })
+hl.animation({ leaf = "fadeIn", enabled = true, speed = 1.8, bezier = "windowEase" })
+hl.animation({ leaf = "fadeOut", enabled = true, speed = 1.4, bezier = "windowEase" })
 ''

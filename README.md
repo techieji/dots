@@ -24,7 +24,8 @@ On this last one, important notes:
    [hyprland](https://hypr.land/) with
    [waybar](https://github.com/Alexays/Waybar) (taskbar) and
    [hyprpaper](https://wiki.hypr.land/Hypr-Ecosystem/hyprpaper/).
-   [hyprlock](https://wiki.hypr.land/Hypr-Ecosystem/hyprlock/) for the lockscreen,
+   a custom [Quickshell](https://quickshell.org/) lockscreen with animated
+   dawn/dusk transitions and parallel password/fingerprint authentication,
    [TheDot](https://www.gnome-look.org/p/1244392) for the cursor. A custom
    [Iosevka](https://typeof.net/Iosevka/) font patched with
    [Nerd Fonts](https://github.com/ryanoasis/nerd-fonts#font-patcher).
@@ -58,6 +59,7 @@ On this last one, important notes:
  - `nh os switch .` while in this repository
  - `nh os test .` for quick changes that don't need to be persisted
  - `nh os boot .` when doing something with the filesystem this is booting off of.
+ - `dots-lock --preview` to test the fullscreen lockscreen and PAM without taking the session lock.
 
 There's codex too, which prepared [Getting started with agentic coding](docs/agentic-coding.md).
 

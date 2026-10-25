@@ -1,4 +1,4 @@
-{ config, pkgs, lib, system, inputs, ... }: 
+{ config, pkgs, lib, system, inputs, hyprlandPackage, ... }:
 let
   cursorInfo = {
     name = "TheDot";
@@ -12,6 +12,119 @@ let
   '';
   iosevkaRadon = pkgs.iosevka.override { set = "Radon"; privateBuildPlan = builtins.readFile ./config/iosevka-radon.toml; };
   background = "${./resources/backgrounds/nightscape.png}";
+  lockscreenUi = pkgs.stdenvNoCC.mkDerivation {
+    pname = "dots-lock-ui";
+    version = "1.0.0";
+    src = ./config/lockscreen;
+    nativeBuildInputs = [ pkgs.qt6.qtdeclarative pkgs.qt6.qtshadertools ];
+    dontWrapQtApps = true;
+    installPhase = ''
+      runHook preInstall
+      mkdir -p $out/share/dots-lock
+      cp *.qml $out/share/dots-lock/
+      qsb --qt6 temperature.frag -o $out/share/dots-lock/temperature.frag.qsb
+      qmllint -I ${pkgs.quickshell}/lib/qt-6/qml -I . *.qml
+      runHook postInstall
+    '';
+  };
+  dotsLock = pkgs.writeShellApplication {
+    name = "dots-lock";
+    runtimeInputs = with pkgs; [
+      coreutils
+      grim
+      hyprlandPackage
+      jq
+      quickshell
+      systemd
+      util-linux
+    ];
+    text = ''
+      mode=lock
+      if [[ ''${1:-} == "--preview" ]]; then
+        mode=preview
+      elif [[ ''${1:-} == "--suspend" ]]; then
+        mode=suspend
+      elif [[ $# -ne 0 ]]; then
+        echo "usage: dots-lock [--preview|--suspend]" >&2
+        exit 2
+      fi
+
+      runtime_base=''${XDG_RUNTIME_DIR:?XDG_RUNTIME_DIR is not set}
+      exec 9>"$runtime_base/dots-lock.lock"
+      if ! flock -n 9; then
+        exit 0
+      fi
+
+      umask 077
+      runtime_dir=$(mktemp -d "$runtime_base/dots-lock.XXXXXX")
+      cleanup() {
+        rm -rf -- "$runtime_dir"
+      }
+      trap cleanup EXIT INT TERM
+
+      bar_widths='{}'
+      if layer_state=$(hyprctl -j layers 2>/dev/null); then
+        bar_widths=$(jq -c '
+          to_entries
+          | map({
+              key: .key,
+              value: ([.value.levels[][] | select(.namespace == "waybar") | .w]
+                | if length > 0 then max else 0 end)
+            })
+          | from_entries
+        ' <<<"$layer_state") || bar_widths='{}'
+      fi
+
+      mapfile -t outputs < <(hyprctl -j monitors | jq -r '.[].name')
+      for output in "''${outputs[@]}"; do
+        safe_output=''${output//[^A-Za-z0-9_.-]/_}
+        grim -o "$output" "$runtime_dir/$safe_output.png" || true
+      done
+
+      run_ui() {
+        DOTS_LOCK_MODE="$1" \
+        DOTS_LOCK_RUNTIME="$runtime_dir" \
+        DOTS_LOCK_BACKGROUND="${background}" \
+        DOTS_LOCK_RECOVERY="''${2:-0}" \
+        DOTS_LOCK_BAR_WIDTHS="$bar_widths" \
+          ${pkgs.quickshell}/bin/qs -n -p ${lockscreenUi}/share/dots-lock
+      }
+
+      if [[ $mode == preview ]]; then
+        run_ui preview
+        exit $?
+      fi
+
+      if [[ $mode == suspend ]]; then
+        run_ui lock 0 &
+        ui_pid=$!
+        for _ in $(seq 1 100); do
+          if [[ -e $runtime_dir/ready ]]; then
+            systemctl suspend
+            break
+          fi
+          if ! kill -0 "$ui_pid" 2>/dev/null; then
+            break
+          fi
+          sleep 0.05
+        done
+        set +e
+        wait "$ui_pid"
+        status=$?
+        set -e
+      else
+        set +e
+        run_ui lock 0
+        status=$?
+        set -e
+      fi
+
+      if (( status != 0 )); then
+        rm -f -- "$runtime_dir"/*.png "$runtime_dir/ready"
+        run_ui lock 1
+      fi
+    '';
+  };
   hyprshellPackage = let
     craneLib = inputs.hyprshell.inputs.crane.mkLib pkgs;
     buildLib = import "${inputs.hyprshell}/nix/build.nix" { inherit craneLib pkgs; };
@@ -48,6 +161,7 @@ in {
     inputs.hyprshell.homeModules.default
     ./config/codex
     ./config/avizo.nix
+    ./config/task-unifier.nix
   ];
 
   home.persistence."/persist/" = {
@@ -55,7 +169,7 @@ in {
       ".gnupg" ".password-store" ".ssh" "Documents"
       "${xdg.dataHome}/zoxide" "${xdg.configHome}/net.imput.helium"
       "${xdg.configHome}/onedrive" "${xdg.configHome}/Slack" "${xdg.configHome}/discord"
-      ".codex" ".vim"   # Codex state and Ultisnips
+      ".codex" ".vim" ".joinnow"   # Codex state, Ultisnips, and eduroam certificates
       ".agents" ".serena" ".local/state/codex-harness" ".local/share/codex-harness"
     ];
   };
@@ -68,6 +182,7 @@ in {
     obsidian
     slack discord
     grimblast
+    dotsLock
     speedcrunch
     libreoffice-qt
     pass
@@ -259,6 +374,7 @@ in {
       inherit pkgs;
       pabc = inputs.pabc.packages.${system}.default;
       helium = inputs.helium.defaultPackage.${system};
+      inherit dotsLock;
     };
     package = null;
     portalPackage = null;
@@ -284,41 +400,7 @@ in {
   };
  
   stylix.targets.hyprlock.enable = false;
-  programs.hyprlock = {
-    enable = true;
-    settings = {
-      general = { no_fade_in = false; disable_loading_bar = true; };
-      background = { 
-        monitor = "";
-        path = background;
-        blur_passes = 3;
-        blur_size = 8;
-        contrast = 0.8916;
-        brightness = 0.8172;
-        vibrancy = 0.1696;
-        vibrancy_darkness = 0.0;
-      };
-      auth."fingerprint:enabled" = true;
-      input-field = [ {
-        monitor = ""; size = "600, 100"; outline_thickness = 2;
-        dots_size = 0.2; dots_spacing = 1; dots_center = true;
-        outer_color = "rgba(0,0,0,0)"; inner_color = "rgba(0,0,0,0.1)";
-        font_color = "rgb(200,200,200)";
-        fade_on_empty = true;
-        font_family = "Iosevka Radon";
-        hide_input = false;
-        position = "100, -300"; halign = "left"; valign = "top";
-      } ];
-      label = [ {
-        monitor = "";
-        text = ''cmd[update:1000] echo "$(date +"%-l:%M%p")"'';
-        color = "rgba(255, 255, 255, 1)";
-        font_size = 120;
-        font_family = "Iosevka Radon";
-        position = "100, -100"; halign = "left"; valign = "top";
-      } ];
-    };
-  };
+  programs.hyprlock.enable = false;
 
   services.hyprpaper = {
     enable = true;

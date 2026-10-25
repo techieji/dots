@@ -1,0 +1,92 @@
+diff --git a/src/animation/AnimationManager.cpp b/src/animation/AnimationManager.cpp
+index 7742d2f..7b7c027 100644
+--- a/src/animation/AnimationManager.cpp
++++ b/src/animation/AnimationManager.cpp
+@@ -180,16 +180,21 @@ void CHyprAnimationManager::tick() {
+         PHLWORKSPACE workspace;
+         PHLLS        layer;
+         PHLMONITOR   monitor;
+-        CBox         previousFull;
+-        bool         entire            = false;
+-        bool         border            = false;
+-        bool         shadow            = false;
+-        bool         glow              = false;
+-        bool         trackWindowMotion = false;
++        bool         entire = false;
++        bool         border = false;
++        bool         shadow = false;
++        bool         glow   = false;
++    };
++
++    struct SWindowMotion {
++        PHLWINDOW window;
++        CBox      previousFull;
++        Vector2D previousOffset;
+     };
+ 
+     std::vector<SDamageOwner> owners;
+     owners.reserve(4);
++    std::vector<SWindowMotion> windowMotions;
+ 
+     // Collect per-owner damage policies
+     for (const auto& PAV : CPY) {
+@@ -255,12 +260,37 @@ void CHyprAnimationManager::tick() {
+         }
+     }
+ 
+-    for (auto& owner : owners) {
+-        if (!owner.window)
++    const auto effectiveWindowOffset = [](PHLWINDOW window) {
++        const auto workspaceOffset = window->m_pinned || !window->m_workspace ? Vector2D{} : window->m_workspace->m_renderOffset->value();
++        return workspaceOffset + window->m_floatingOffset;
++    };
++
++    const auto trackWindowMotion = [&](PHLWINDOW window) {
++        if (std::ranges::any_of(windowMotions, [&window](const auto& motion) { return motion.window == window; }))
++            return;
++
++        windowMotions.emplace_back(SWindowMotion{
++            .window         = window,
++            .previousFull   = window->getFullWindowBoundingBox(),
++            .previousOffset = effectiveWindowOffset(window),
++        });
++    };
++
++    for (const auto& owner : owners) {
++        if (owner.window) {
++            trackWindowMotion(owner.window);
++            continue;
++        }
++
++        if (!owner.workspace)
+             continue;
+ 
+-        owner.previousFull      = owner.window->getFullWindowBoundingBox();
+-        owner.trackWindowMotion = true;
++        for (const auto& window : Desktop::windowState()->windows()) {
++            if (!validMapped(window) || window->m_workspace != owner.workspace || window->m_pinned)
++                continue;
++
++            trackWindowMotion(window);
++        }
+     }
+ 
+     // pre-damage each owner once (old state)
+@@ -303,11 +333,13 @@ void CHyprAnimationManager::tick() {
+         }
+     }
+ 
+-    for (const auto& owner : owners) {
+-        if (!owner.window || !owner.trackWindowMotion)
+-            continue;
++    for (const auto& motion : windowMotions) {
++        const auto currentOffset = effectiveWindowOffset(motion.window);
++        const auto previousFull  = motion.previousFull.copy().translate(motion.previousOffset - currentOffset);
+ 
+-        owner.window->recordMotionBlur(owner.previousFull, owner.window->getFullWindowBoundingBox());
++        // Motion blur state applies the current render offset to both boxes. Express
++        // the previous box relative to it so workspace motion is retained.
++        motion.window->recordMotionBlur(previousFull, motion.window->getFullWindowBoundingBox());
+     }
+ 
+     // post-damage each owner once (new state) + schedule frames
